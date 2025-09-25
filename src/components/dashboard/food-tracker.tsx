@@ -113,7 +113,7 @@ const FoodTracker = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to analyze.');
+        throw new Error(errorData.detail || 'Failed to analyze.');
       }
 
       const result = await response.json();
