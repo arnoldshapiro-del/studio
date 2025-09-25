@@ -10,13 +10,10 @@ import { Label } from '@/components/ui/label';
 import { BrainCircuit, Zap, Wind } from 'lucide-react';
 import { isToday, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
-
-interface StressWellnessProps {
-  stress: StressState;
-}
+import { initialStressState } from '@/lib/data';
 
 const BoxBreathingAnimation = () => {
   const [instruction, setInstruction] = useState('Get Ready...');
@@ -82,7 +79,7 @@ const BoxBreathingAnimation = () => {
 };
 
 
-const StressWellness = ({ stress }: StressWellnessProps) => {
+const StressWellness = () => {
     const { toast } = useToast();
     const { user } = useUser();
     const firestore = useFirestore();
@@ -92,6 +89,9 @@ const StressWellness = ({ stress }: StressWellnessProps) => {
       return doc(firestore, 'users', user.uid, 'data', 'latest');
     }, [user, firestore]);
     
+    const { data: stressData } = useDoc<{ stress: StressState }>(userDocRef);
+    const stress = stressData?.stress || initialStressState;
+
     const todayStressEntry = stress.history.find(entry => isToday(parseISO(entry.date)));
     const [stressLevel, setStressLevel] = useState<number>(5);
     const [showBreathing, setShowBreathing] = useState(false);
@@ -107,7 +107,7 @@ const StressWellness = ({ stress }: StressWellnessProps) => {
         const today = new Date().toISOString();
         const history = stress.history.filter(entry => !isToday(parseISO(entry.date)));
         const newHistory = [...history, { date: today, level: stressLevel }];
-        setDocumentNonBlocking(userDocRef, { stress: { history: newHistory } }, { merge: true });
+        setDocumentNonBlocking(userDocRef, { stress: { ...stress, history: newHistory } }, { merge: true });
         toast({ title: 'Stress Level Logged', description: `You've logged a stress level of ${stressLevel}.` });
     };
     
@@ -178,3 +178,5 @@ const StressWellness = ({ stress }: StressWellnessProps) => {
 };
 
 export default StressWellness;
+
+    

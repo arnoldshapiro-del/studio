@@ -169,11 +169,11 @@ export default function Home() {
 
             {activeView === 'trackers' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                <MedicationTracker medication={allData.medication} />
-                <WaterTracker water={allData.water} />
-                <InjectionTracker injection={allData.injection} />
-                <WorkoutTracker workout={allData.workout} />
-                <MoodTracker mood={allData.mood} />
+                <MedicationTracker />
+                <WaterTracker />
+                <InjectionTracker />
+                <WorkoutTracker />
+                <MoodTracker />
                 <div className="md:col-span-2 lg:col-span-1 lg:row-start-auto">
                   <AiInsights allData={allData} />
                 </div>
@@ -195,7 +195,7 @@ export default function Home() {
             )}
 
             {activeView === 'stress' && (
-              <StressWellness stress={allData.stress} />
+              <StressWellness />
             )}
 
             {activeView === 'progress' && (
@@ -204,7 +204,6 @@ export default function Home() {
 
             {activeView === 'settings' && (
                 <Settings 
-                  workout={allData.workout} 
                   allData={allData} 
                 />
             )}
@@ -220,3 +219,5 @@ export default function Home() {
     </SidebarProvider>
   );
 }
+
+    

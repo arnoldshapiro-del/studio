@@ -75,6 +75,7 @@ const FoodTracker = () => {
         context.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
         const dataUrl = canvas.toDataURL('image/jpeg');
         setPhoto(dataUrl);
+        setAnalysis(null);
       }
     }
   };
@@ -85,6 +86,7 @@ const FoodTracker = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         setPhoto(e.target?.result as string);
+        setAnalysis(null);
       };
       reader.readAsDataURL(file);
     }
@@ -114,10 +116,13 @@ const FoodTracker = () => {
   };
   
   const scanBarcode = async () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || isPending) return;
 
     toast({ title: 'Scanning for barcode...' });
+    setCaptureMode('barcode');
     setIsPending(true);
+    setPhoto(null);
+    setAnalysis(null);
 
     try {
       const barcodeDetector = new BarcodeDetectorPolyfill();
@@ -125,21 +130,25 @@ const FoodTracker = () => {
 
       if (barcodes.length > 0) {
         const barcodeValue = barcodes[0].rawValue;
-        toast({ title: 'Barcode Found!', description: barcodeValue });
+        toast({ title: 'Barcode Found!', description: `Looking up ${barcodeValue}` });
         const result = await diagnoseFoodAction({ barcode: barcodeValue });
          if (typeof result === 'string') {
           toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
-        } else {
+        } else if (result.items.length === 0) {
+            toast({ variant: 'destructive', title: 'Barcode Not Found', description: 'This barcode is not in our database yet.' });
+        }
+        else {
           setAnalysis(result);
         }
       } else {
-        toast({ variant: 'destructive', title: 'No barcode detected.' });
+        toast({ variant: 'destructive', title: 'No barcode detected.', description: 'Please try again.' });
       }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Barcode detection failed:", error);
-        toast({ variant: 'destructive', title: 'Barcode scanning not supported or failed.' });
+        toast({ variant: 'destructive', title: 'Barcode Scan Failed', description: error.message || 'Could not scan barcode.' });
     } finally {
         setIsPending(false);
+        setCaptureMode('photo');
     }
   };
 
@@ -147,14 +156,17 @@ const FoodTracker = () => {
   const reset = () => {
     setPhoto(null);
     setAnalysis(null);
-    getCameraPermission();
+    setCaptureMode('photo');
+    if (hasCameraPermission === undefined) {
+      getCameraPermission();
+    }
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="font-headline text-lg flex items-center gap-2">
-          <Camera className="text-primary" />
+          <Utensils className="text-primary" />
           AI Food Logger
         </CardTitle>
       </CardHeader>
@@ -171,8 +183,13 @@ const FoodTracker = () => {
               />
               <div className="absolute inset-0 bg-black/20" />
               {captureMode === 'barcode' && (
-                  <div className="absolute w-full h-1/3 border-y-4 border-primary/50 animate-pulse" />
+                  <div className="absolute w-full h-1/3 border-y-4 border-primary/50" />
               )}
+               {isPending && captureMode === 'barcode' && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                    <Loader2 className="w-10 h-10 animate-spin text-white" />
+                  </div>
+                )}
             </div>
             {hasCameraPermission === false && (
               <Alert variant="destructive">
@@ -183,7 +200,7 @@ const FoodTracker = () => {
                 </AlertDescription>
               </Alert>
             )}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 className="flex-1"
                 onClick={takePhoto}
@@ -192,37 +209,47 @@ const FoodTracker = () => {
                 <Camera className="mr-2" />
                 Take Photo
               </Button>
-              <Button asChild variant="outline" className="flex-1">
-                <label>
-                  <Upload className="mr-2" />
-                  Upload Photo
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="sr-only"
-                    onChange={handleFileUpload}
-                  />
-                </label>
-              </Button>
-            </div>
-             <div className="flex gap-4">
-                <Button
+               <Button
                   className="flex-1"
                   onClick={scanBarcode}
                   disabled={hasCameraPermission === false || isPending}
                   variant="secondary"
                 >
                   <ScanLine className="mr-2" />
-                  {isPending ? 'Scanning...' : 'Scan Barcode'}
+                  {isPending && captureMode === 'barcode' ? 'Scanning...' : 'Scan Barcode'}
                 </Button>
-             </div>
+            </div>
+             <div className="relative flex items-center justify-center my-4">
+                <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                    Or
+                    </span>
+                </div>
+            </div>
+             <Button asChild variant="outline" className="w-full">
+                <label className='cursor-pointer'>
+                  <Upload className="mr-2" />
+                  Upload a Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={handleFileUpload}
+                    disabled={isPending}
+                  />
+                </label>
+              </Button>
           </div>
         ) : (
           <div className="space-y-4">
             {photo && <img src={photo} alt="Food" className="rounded-md w-full" />}
-            {isPending && (
+            {isPending && !analysis && (
                 <div className="flex items-center justify-center p-8">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    <p className="ml-4">Analyzing your meal...</p>
                 </div>
             )}
             {analysis && (
@@ -285,28 +312,32 @@ const FoodTracker = () => {
         )}
         <canvas ref={canvasRef} className="hidden" />
       </CardContent>
-      {(photo || analysis) && (
-        <CardFooter className="flex gap-4">
-          <Button variant="outline" onClick={reset} className="flex-1">
-            <X className="mr-2" />
-            Reset
-          </Button>
-          <Button
-            onClick={analyzePhoto}
-            className="flex-1"
-            disabled={isPending || (!photo && !analysis)}
-          >
-            {isPending ? (
-              <Loader2 className="animate-spin mr-2" />
-            ) : (
-              <Check className="mr-2" />
-            )}
-            {analysis ? 'Log Food' : 'Analyze Photo'}
-          </Button>
+       <CardFooter className="flex gap-4">
+         {(photo || analysis) ? (
+            <>
+              <Button variant="outline" onClick={reset} className="flex-1">
+                <X className="mr-2" />
+                Reset
+              </Button>
+              <Button
+                onClick={photo ? analyzePhoto : () => { /* TODO: Log Data */ }}
+                className="flex-1"
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <Loader2 className="animate-spin mr-2" />
+                ) : (
+                  <Check className="mr-2" />
+                )}
+                {analysis ? 'Log Food' : 'Analyze Photo'}
+              </Button>
+            </>
+         ) : null}
         </CardFooter>
-      )}
     </Card>
   );
 };
 
 export default FoodTracker;
+
+    

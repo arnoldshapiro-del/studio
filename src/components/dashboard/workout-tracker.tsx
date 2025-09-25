@@ -11,13 +11,10 @@ import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, Dialog
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { useState } from 'react';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
-
-interface WorkoutTrackerProps {
-  workout: WorkoutState;
-}
+import { initialWorkoutState } from '@/lib/data';
 
 const LogWorkoutDialog = ({ type, onLog, goal, sessionsThisWeek }: { type: 'treadmill' | 'resistance', onLog: (startTime: string, endTime: string) => void, goal: number, sessionsThisWeek: number }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -85,7 +82,7 @@ const LogWorkoutDialog = ({ type, onLog, goal, sessionsThisWeek }: { type: 'trea
 };
 
 
-const WorkoutTracker = ({ workout }: WorkoutTrackerProps) => {
+const WorkoutTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -93,6 +90,9 @@ const WorkoutTracker = ({ workout }: WorkoutTrackerProps) => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
+  
+  const { data: workoutData } = useDoc<{ workout: WorkoutState }>(userDocRef);
+  const workout = workoutData?.workout || initialWorkoutState;
 
   const handleLogWorkout = (type: 'treadmill' | 'resistance', startTime: string, endTime: string) => {
     if (!userDocRef) return;
@@ -173,3 +173,5 @@ const WorkoutTracker = ({ workout }: WorkoutTrackerProps) => {
 };
 
 export default WorkoutTracker;
+
+    

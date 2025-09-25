@@ -10,13 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Smile, Frown, Meh, HeartPulse } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO } from 'date-fns';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
-
-interface MoodTrackerProps {
-  mood: MoodState;
-}
+import { initialMoodState } from '@/lib/data';
 
 type MoodOption = 'great' | 'good' | 'neutral' | 'bad' | 'awful';
 
@@ -28,7 +25,7 @@ const moodOptions: { value: MoodOption; label: string; icon: React.ElementType }
   { value: 'awful', label: 'Awful', icon: Frown },
 ];
 
-const MoodTracker = ({ mood }: MoodTrackerProps) => {
+const MoodTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -36,6 +33,9 @@ const MoodTracker = ({ mood }: MoodTrackerProps) => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
+
+  const { data: moodData } = useDoc<{ mood: MoodState }>(userDocRef);
+  const mood = moodData?.mood || initialMoodState;
 
   const todayMoodEntry = mood.history.find(entry => isToday(parseISO(entry.date)));
 
@@ -58,7 +58,7 @@ const MoodTracker = ({ mood }: MoodTrackerProps) => {
     const today = new Date().toISOString();
     const history = mood.history.filter(entry => !isToday(parseISO(entry.date)));
     const newHistory = [...history, { date: today, mood: moodValue, notes: moodNotes }];
-    setDocumentNonBlocking(userDocRef, { mood: { history: newHistory } }, { merge: true });
+    setDocumentNonBlocking(userDocRef, { mood: { ...mood, history: newHistory } }, { merge: true });
   };
 
   const handleMoodSelect = (moodValue: MoodOption) => {
@@ -128,3 +128,5 @@ const MoodTracker = ({ mood }: MoodTrackerProps) => {
 };
 
 export default MoodTracker;
+
+    

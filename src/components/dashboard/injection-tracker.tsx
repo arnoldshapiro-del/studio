@@ -12,15 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { addDays, format, differenceInDays, isToday, parseISO, set } from 'date-fns';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
+import { initialInjectionState } from '@/lib/data';
 
-interface InjectionTrackerProps {
-  injection: InjectionState;
-}
-
-const InjectionTracker = ({ injection }: InjectionTrackerProps) => {
+const InjectionTracker = () => {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
@@ -31,6 +28,9 @@ const InjectionTracker = ({ injection }: InjectionTrackerProps) => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
+  
+  const { data: injectionData } = useDoc<{ injection: InjectionState }>(userDocRef);
+  const injection = injectionData?.injection || initialInjectionState;
 
   const [tempSettings, setTempSettings] = useState({
     startDate: format(parseISO(injection.startDate), 'yyyy-MM-dd'),
@@ -205,3 +205,5 @@ const InjectionTracker = ({ injection }: InjectionTrackerProps) => {
 };
 
 export default InjectionTracker;
+
+    

@@ -10,26 +10,34 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Dumbbell, Settings as SettingsIcon, FileText } from 'lucide-react';
 import HealthReport from './health-report';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
+import { initialWorkoutState } from '@/lib/data';
 
 interface SettingsProps {
-  workout: WorkoutState;
   allData: AllData;
 }
 
-const Settings = ({ workout: initialWorkout, allData }: SettingsProps) => {
+const Settings = ({ allData }: SettingsProps) => {
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
   const [activeTab, setActiveTab] = useState('general');
-  const [workout, setWorkout] = useState(initialWorkout);
-
+  
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
+  
+  const { data: workoutData } = useDoc<{ workout: WorkoutState }>(userDocRef);
+  const [workout, setWorkout] = useState(workoutData?.workout || initialWorkoutState);
+
+  useState(() => {
+      if (workoutData?.workout) {
+          setWorkout(workoutData.workout);
+      }
+  });
 
   const handleGoalChange = (type: 'treadmill' | 'resistance', value: number) => {
     setWorkout(prev => ({
@@ -123,3 +131,5 @@ const Settings = ({ workout: initialWorkout, allData }: SettingsProps) => {
 };
 
 export default Settings;
+
+    

@@ -7,15 +7,12 @@ import { GlassWater, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO } from 'date-fns';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
+import { initialWaterState } from '@/lib/data';
 
-interface WaterTrackerProps {
-  water: WaterState;
-}
-
-const WaterTracker = ({ water }: WaterTrackerProps) => {
+const WaterTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -23,6 +20,9 @@ const WaterTracker = ({ water }: WaterTrackerProps) => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
+  
+  const { data: waterData } = useDoc<{ water: WaterState }>(userDocRef);
+  const water = waterData?.water || initialWaterState;
   
   const handleToggle = (period: 'morning' | 'afternoon' | 'evening') => {
     if(!userDocRef) return;
@@ -37,7 +37,7 @@ const WaterTracker = ({ water }: WaterTrackerProps) => {
       updatedHistory = [...water.history, { period, date: today }];
     }
 
-    setDocumentNonBlocking(userDocRef, { water: { history: updatedHistory } }, { merge: true });
+    setDocumentNonBlocking(userDocRef, { water: { ...water, history: updatedHistory } }, { merge: true });
   };
 
   const waterOptions: { period: 'morning' | 'afternoon' | 'evening'; label: string }[] = [
@@ -86,3 +86,5 @@ const WaterTracker = ({ water }: WaterTrackerProps) => {
 };
 
 export default WaterTracker;
+
+    

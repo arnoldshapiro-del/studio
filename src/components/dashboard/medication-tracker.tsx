@@ -7,15 +7,12 @@ import { Pill, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { isToday, parseISO } from 'date-fns';
-import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
+import { initialMedicationState } from '@/lib/data';
 
-interface MedicationTrackerProps {
-  medication: MedicationState;
-}
-
-const MedicationTracker = ({ medication }: MedicationTrackerProps) => {
+const MedicationTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -23,6 +20,9 @@ const MedicationTracker = ({ medication }: MedicationTrackerProps) => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
+
+  const { data: medicationData } = useDoc<{ medication: MedicationState }>(userDocRef);
+  const medication = medicationData?.medication || initialMedicationState;
 
   const handleToggle = (period: 'morning' | 'evening') => {
     if (!userDocRef) return;
@@ -33,10 +33,8 @@ const MedicationTracker = ({ medication }: MedicationTrackerProps) => {
     
     let updatedHistory;
     if (isTaken) {
-      // Remove the entry for today
       updatedHistory = medication.history.filter(h => !(h.period === period && isToday(parseISO(h.date))));
     } else {
-      // Add the entry for today
       updatedHistory = [...medication.history, { period, date: today, time }];
     }
     
@@ -110,3 +108,5 @@ const MedicationTracker = ({ medication }: MedicationTrackerProps) => {
 };
 
 export default MedicationTracker;
+
+    
