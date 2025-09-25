@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import type { AllData } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Flame, Droplet, Pill } from 'lucide-react';
-import { differenceInCalendarDays, parseISO, startOfDay, subDays } from 'date-fns';
+import { differenceInCalendarDays, parseISO, startOfDay, subDays, format } from 'date-fns';
 
 interface StreaksTrackerProps {
   allData: AllData;
