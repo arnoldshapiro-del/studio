@@ -21,13 +21,16 @@ import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Calendar from '@/components/dashboard/calendar';
+import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings } from 'lucide-react';
+
 
 export default function Home() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const [activeView, setActiveView] = useState('dashboard');
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -97,50 +100,87 @@ export default function Home() {
   }
 
   return (
+    <SidebarProvider>
     <div className="flex flex-col min-h-screen">
       <Header />
-      <main className="flex-1 p-4 sm:p-6 md:p-8">
-        <DashboardHeader />
-        <Tabs defaultValue="dashboard" className="mt-8">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="trackers">Daily Trackers</TabsTrigger>
-            <TabsTrigger value="progress">Progress</TabsTrigger>
-          </TabsList>
-          <TabsContent value="dashboard">
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-3">
-                <Calendar 
-                  allData={allData} 
-                  onUpdateWorkout={handleUpdateWorkout}
-                  onDeleteWorkout={handleDeleteWorkout}
-                />
+      <div className='flex flex-1'>
+        <Sidebar>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('dashboard')} isActive={activeView === 'dashboard'} tooltip="Dashboard">
+                        <LayoutDashboard />
+                        <span>Dashboard</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('trackers')} isActive={activeView === 'trackers'} tooltip="Daily Trackers">
+                        <CheckSquare />
+                        <span>Daily Trackers</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('progress')} isActive={activeView === 'progress'} tooltip="Progress">
+                        <BarChart />
+                        <span>Progress</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => {}} disabled tooltip="Settings">
+                        <Settings />
+                        <span>Settings</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => {}} disabled tooltip="Help">
+                        <HelpCircle />
+                        <span>Help</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+            </SidebarMenu>
+        </Sidebar>
+        <SidebarInset>
+        <main className="flex-1 p-4 sm:p-6 md:p-8">
+          <DashboardHeader />
+          <div className='mt-8'>
+            {activeView === 'dashboard' && (
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="lg:col-span-3">
+                  <Calendar 
+                    allData={allData} 
+                    onUpdateWorkout={handleUpdateWorkout}
+                    onDeleteWorkout={handleDeleteWorkout}
+                  />
+                </div>
+                <div className="lg:col-span-1">
+                  <StreaksTracker allData={allData} />
+                </div>
               </div>
-              <div className="lg:col-span-1">
-                <StreaksTracker allData={allData} />
+            )}
+
+            {activeView === 'trackers' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                <MedicationTracker medication={medication} setMedication={setMedication} />
+                <WaterTracker water={water} setWater={setWater} />
+                <InjectionTracker injection={injection} setInjection={setInjection} />
+                <WorkoutTracker workout={workout} setWorkout={setWorkout} />
+                <MoodTracker mood={mood} setMood={setMood} />
+                <div className="md:col-span-2 lg:col-span-1 lg:row-start-auto">
+                  <AiInsights allData={allData} />
+                </div>
+                <div className="md:col-span-2 lg:col-span-3">
+                  <AiRecommendations workoutData={workout} />
+                </div>
               </div>
-            </div>
-          </TabsContent>
-          <TabsContent value="trackers">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-              <MedicationTracker medication={medication} setMedication={setMedication} />
-              <WaterTracker water={water} setWater={setWater} />
-              <InjectionTracker injection={injection} setInjection={setInjection} />
-              <WorkoutTracker workout={workout} setWorkout={setWorkout} />
-              <MoodTracker mood={mood} setMood={setMood} />
-              <div className="md:col-span-2 lg:col-span-1 lg:row-start-auto">
-                <AiInsights allData={allData} />
-              </div>
-              <div className="md:col-span-2 lg:col-span-3">
-                <AiRecommendations workoutData={workout} />
-              </div>
-            </div>
-          </TabsContent>
-           <TabsContent value="progress">
-              <ProgressCharts allData={allData} />
-          </TabsContent>
-        </Tabs>
-      </main>
+            )}
+            
+            {activeView === 'progress' && (
+                <ProgressCharts allData={allData} />
+            )}
+          </div>
+        </main>
+        </SidebarInset>
+      </div>
     </div>
+    </SidebarProvider>
   );
 }
