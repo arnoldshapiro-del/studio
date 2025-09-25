@@ -5,6 +5,7 @@ import type {
   InjectionState,
   WorkoutState,
   MoodState,
+  StressState,
 } from './types';
 
 export const initialMedicationState: MedicationState = {
@@ -35,4 +36,8 @@ export const initialWorkoutState: WorkoutState = {
 
 export const initialMoodState: MoodState = {
     history: [],
+};
+
+export const initialStressState: StressState = {
+  history: [],
 };

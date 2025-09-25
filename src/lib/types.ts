@@ -59,10 +59,20 @@ export type MoodState = {
     history: MoodEntry[];
 };
 
+export type StressEntry = DatedEntry & {
+  level: number; // 1-10
+  notes?: string;
+};
+
+export type StressState = {
+  history: StressEntry[];
+};
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
   injection: InjectionState;
   workout: WorkoutState;
   mood: MoodState;
+  stress: StressState;
 };

@@ -11,7 +11,8 @@
         "water": { "$ref": "#/backend/entities/WaterState" },
         "injection": { "$ref": "#/backend/entities/InjectionState" },
         "workout": { "$ref": "#/backend/entities/WorkoutState" },
-        "mood": { "$ref": "#/backend/entities/MoodState" }
+        "mood": { "$ref": "#/backend/entities/MoodState" },
+        "stress": { "$ref": "#/backend/entities/StressState" }
       }
     },
     "DatedEntry": {
@@ -127,6 +128,32 @@
         }
       },
       "required": ["mood"]
+    },
+    "StressState": {
+      "title": "StressState",
+      "type": "object",
+      "properties": {
+        "history": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/StressEntry" }
+        }
+      }
+    },
+    "StressEntry": {
+      "title": "StressEntry",
+      "type": "object",
+      "allOf": [{ "$ref": "#/backend/entities/DatedEntry" }],
+      "properties": {
+        "level": {
+          "type": "number",
+          "description": "User's self-reported stress level (1-10)."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes from the user about their stress."
+        }
+      },
+      "required": ["level"]
     }
   },
   "auth": {
@@ -142,5 +169,3 @@
     }
   }
 }
-
-    

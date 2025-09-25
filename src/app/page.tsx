@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import type { AllData, WorkoutEntry } from '@/lib/types';
-import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState } from '@/lib/data';
+import type { AllData, WorkoutEntry, StressEntry } from '@/lib/types';
+import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState, initialStressState } from '@/lib/data';
 
 import Header from '@/components/header';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -17,6 +17,7 @@ import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
 import ProgressCharts from '@/components/dashboard/progress-charts';
 import FoodTracker from '@/components/dashboard/food-tracker';
+import StressWellness from '@/components/dashboard/stress-wellness';
 import Settings from '@/components/settings';
 import Help from '@/components/help';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
@@ -26,7 +27,7 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils } from 'lucide-react';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit } from 'lucide-react';
 
 
 export default function Home() {
@@ -47,14 +48,16 @@ export default function Home() {
   const [injection, setInjection] = useState(initialInjectionState);
   const [workout, setWorkout] = useState(initialWorkoutState);
   const [mood, setMood] = useState(initialMoodState);
+  const [stress, setStress] = useState(initialStressState);
   
   const allData: AllData = useMemo(() => ({
     medication,
     water,
     injection,
     workout,
-    mood
-  }), [medication, water, injection, workout, mood]);
+    mood,
+    stress,
+  }), [medication, water, injection, workout, mood, stress]);
 
   const handleUpdateWorkout = (updatedEntry: WorkoutEntry) => {
     setWorkout(prev => ({
@@ -77,6 +80,7 @@ export default function Home() {
       setInjection(userData.injection || initialInjectionState);
       setWorkout(userData.workout || initialWorkoutState);
       setMood(userData.mood || initialMoodState);
+      setStress(userData.stress || initialStressState);
     }
   }, [userData, userDataLoading]);
 
@@ -125,6 +129,12 @@ export default function Home() {
                     <SidebarMenuButton onClick={() => setActiveView('food')} isActive={activeView === 'food'} tooltip="Food">
                         <Utensils />
                         <span>Food</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('stress')} isActive={activeView === 'stress'} tooltip="Stress & Wellness">
+                        <BrainCircuit />
+                        <span>Stress</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
@@ -184,6 +194,10 @@ export default function Home() {
             
             {activeView === 'food' && (
                 <FoodTracker />
+            )}
+
+            {activeView === 'stress' && (
+              <StressWellness stress={stress} setStress={setStress} />
             )}
 
             {activeView === 'progress' && (
