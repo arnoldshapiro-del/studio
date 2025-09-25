@@ -16,6 +16,7 @@ import StreaksTracker from '@/components/dashboard/streaks-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
 import ProgressCharts from '@/components/dashboard/progress-charts';
+import FoodTracker from '@/components/dashboard/food-tracker';
 import Settings from '@/components/settings';
 import Help from '@/components/help';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
@@ -25,7 +26,7 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon } from 'lucide-react';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils } from 'lucide-react';
 
 
 export default function Home() {
@@ -121,6 +122,12 @@ export default function Home() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('food')} isActive={activeView === 'food'} tooltip="Food">
+                        <Utensils />
+                        <span>Food</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setActiveView('progress')} isActive={activeView === 'progress'} tooltip="Progress">
                         <BarChart />
                         <span>Progress</span>
@@ -175,6 +182,10 @@ export default function Home() {
               </div>
             )}
             
+            {activeView === 'food' && (
+                <FoodTracker />
+            )}
+
             {activeView === 'progress' && (
                 <ProgressCharts allData={allData} />
             )}
