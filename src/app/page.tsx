@@ -13,13 +13,13 @@ import InjectionTracker from '@/components/dashboard/injection-tracker';
 import WorkoutTracker from '@/components/dashboard/workout-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
-import CalendarView from '@/components/dashboard/calendar-view';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Calendar from '@/components/dashboard/calendar';
 
 export default function Home() {
   const router = useRouter();
@@ -81,11 +81,14 @@ export default function Home() {
       <Header />
       <main className="flex-1 p-4 sm:p-6 md:p-8">
         <DashboardHeader />
-        <Tabs defaultValue="trackers" className="mt-8">
+        <Tabs defaultValue="dashboard" className="mt-8">
           <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="trackers">Daily Trackers</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar</TabsTrigger>
           </TabsList>
+          <TabsContent value="dashboard">
+            <Calendar allData={allData} />
+          </TabsContent>
           <TabsContent value="trackers">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               <MedicationTracker medication={medication} setMedication={setMedication} />
@@ -99,9 +102,6 @@ export default function Home() {
                 <AiRecommendations workoutData={workout} />
               </div>
             </div>
-          </TabsContent>
-          <TabsContent value="calendar">
-            <CalendarView allData={allData} />
           </TabsContent>
         </Tabs>
       </main>
