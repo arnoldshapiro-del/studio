@@ -7,40 +7,49 @@ import { Pill, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { isToday, parseISO } from 'date-fns';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface MedicationTrackerProps {
   medication: MedicationState;
-  setMedication: React.Dispatch<React.SetStateAction<MedicationState>>;
 }
 
-const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps) => {
-  const handleToggle = (period: 'morning' | 'evening') => {
-    setMedication(prev => {
-      const today = new Date().toISOString();
-      const time = prev[period].time;
-      const isTaken = prev.history.some(h => h.period === period && isToday(parseISO(h.date)));
+const MedicationTracker = ({ medication }: MedicationTrackerProps) => {
+  const { user } = useUser();
+  const firestore = useFirestore();
 
-      if (isTaken) {
-        // Remove the entry for today
-        return {
-          ...prev,
-          history: prev.history.filter(h => !(h.period === period && isToday(parseISO(h.date)))),
-        };
-      } else {
-        // Add the entry for today
-        return {
-          ...prev,
-          history: [...prev.history, { period, date: today, time }],
-        };
-      }
-    });
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
+  }, [user, firestore]);
+
+  const handleToggle = (period: 'morning' | 'evening') => {
+    if (!userDocRef) return;
+
+    const today = new Date().toISOString();
+    const time = medication[period].time;
+    const isTaken = medication.history.some(h => h.period === period && isToday(parseISO(h.date)));
+    
+    let updatedHistory;
+    if (isTaken) {
+      // Remove the entry for today
+      updatedHistory = medication.history.filter(h => !(h.period === period && isToday(parseISO(h.date))));
+    } else {
+      // Add the entry for today
+      updatedHistory = [...medication.history, { period, date: today, time }];
+    }
+    
+    setDocumentNonBlocking(userDocRef, { medication: { ...medication, history: updatedHistory } }, { merge: true });
   };
 
   const handleTimeChange = (period: 'morning' | 'evening', time: string) => {
-    setMedication(prev => ({
-      ...prev,
-      [period]: { ...prev[period], time },
-    }));
+    if (!userDocRef) return;
+    const updatedMedication = {
+      ...medication,
+      [period]: { ...medication[period], time },
+    };
+    setDocumentNonBlocking(userDocRef, { medication: updatedMedication }, { merge: true });
   };
 
   const isMorningTaken = medication.history.some(h => h.period === 'morning' && isToday(parseISO(h.date)));

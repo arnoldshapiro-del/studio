@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState } from 'react';
-import type { MoodState, MoodEntry } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import type { MoodState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Smile, Frown, Meh, HeartPulse } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO } from 'date-fns';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface MoodTrackerProps {
   mood: MoodState;
-  setMood: React.Dispatch<React.SetStateAction<MoodState>>;
 }
 
 type MoodOption = 'great' | 'good' | 'neutral' | 'bad' | 'awful';
@@ -26,36 +28,49 @@ const moodOptions: { value: MoodOption; label: string; icon: React.ElementType }
   { value: 'awful', label: 'Awful', icon: Frown },
 ];
 
-const MoodTracker = ({ mood, setMood }: MoodTrackerProps) => {
+const MoodTracker = ({ mood }: MoodTrackerProps) => {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
+  }, [user, firestore]);
+
   const todayMoodEntry = mood.history.find(entry => isToday(parseISO(entry.date)));
 
-  const [selectedMood, setSelectedMood] = useState<MoodOption | null>(todayMoodEntry?.mood || null);
-  const [notes, setNotes] = useState(todayMoodEntry?.notes || '');
+  const [selectedMood, setSelectedMood] = useState<MoodOption | null>(null);
+  const [notes, setNotes] = useState('');
+
+  useEffect(() => {
+    if (todayMoodEntry) {
+      setSelectedMood(todayMoodEntry.mood);
+      setNotes(todayMoodEntry.notes || '');
+    } else {
+      setSelectedMood(null);
+      setNotes('');
+    }
+  }, [todayMoodEntry]);
+
+
+  const updateMoodInFirestore = (moodValue: MoodOption, moodNotes: string) => {
+    if (!userDocRef) return;
+    const today = new Date().toISOString();
+    const history = mood.history.filter(entry => !isToday(parseISO(entry.date)));
+    const newHistory = [...history, { date: today, mood: moodValue, notes: moodNotes }];
+    setDocumentNonBlocking(userDocRef, { mood: { history: newHistory } }, { merge: true });
+  };
 
   const handleMoodSelect = (moodValue: MoodOption) => {
     setSelectedMood(moodValue);
-    const today = new Date().toISOString();
-    setMood(prev => {
-      const history = prev.history.filter(entry => !isToday(parseISO(entry.date)));
-      return {
-        ...prev,
-        history: [...history, { date: today, mood: moodValue, notes }],
-      };
-    });
+    updateMoodInFirestore(moodValue, notes);
   };
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newNotes = e.target.value;
     setNotes(newNotes);
     if (selectedMood) {
-      const today = new Date().toISOString();
-      setMood(prev => {
-        const history = prev.history.filter(entry => !isToday(parseISO(entry.date)));
-        return {
-          ...prev,
-          history: [...history, { date: today, mood: selectedMood, notes: newNotes }],
-        };
-      });
+      updateMoodInFirestore(selectedMood, newNotes);
     }
   };
 

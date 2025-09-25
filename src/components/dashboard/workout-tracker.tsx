@@ -3,18 +3,20 @@
 
 import type { WorkoutState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Footprints, Dumbbell, Clock } from 'lucide-react';
+import { Footprints, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { isThisWeek, parseISO, format } from 'date-fns';
+import { isThisWeek, parseISO } from 'date-fns';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { useState } from 'react';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface WorkoutTrackerProps {
   workout: WorkoutState;
-  setWorkout: React.Dispatch<React.SetStateAction<WorkoutState>>;
 }
 
 const LogWorkoutDialog = ({ type, onLog, goal, sessionsThisWeek }: { type: 'treadmill' | 'resistance', onLog: (startTime: string, endTime: string) => void, goal: number, sessionsThisWeek: number }) => {
@@ -83,22 +85,28 @@ const LogWorkoutDialog = ({ type, onLog, goal, sessionsThisWeek }: { type: 'trea
 };
 
 
-const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
+const WorkoutTracker = ({ workout }: WorkoutTrackerProps) => {
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
+  }, [user, firestore]);
 
   const handleLogWorkout = (type: 'treadmill' | 'resistance', startTime: string, endTime: string) => {
-    setWorkout(prev => {
-      const today = new Date().toISOString();
-      return {
-        ...prev,
-        history: [...prev.history, { 
-          id: crypto.randomUUID(), 
-          type, 
-          date: today,
-          startTime,
-          endTime,
-        }],
-      };
-    });
+    if (!userDocRef) return;
+    
+    const today = new Date().toISOString();
+    const newHistory = [...workout.history, { 
+      id: crypto.randomUUID(), 
+      type, 
+      date: today,
+      startTime,
+      endTime,
+    }];
+
+    setDocumentNonBlocking(userDocRef, { workout: { ...workout, history: newHistory } }, { merge: true });
   };
   
   const getSessionsThisWeek = (type: 'treadmill' | 'resistance') => {

@@ -43,54 +43,39 @@ export default function Home() {
 
   const { data: userData, isLoading: userDataLoading } = useDoc<AllData>(userDocRef);
 
-  const [medication, setMedication] = useState(initialMedicationState);
-  const [water, setWater] = useState(initialWaterState);
-  const [injection, setInjection] = useState(initialInjectionState);
-  const [workout, setWorkout] = useState(initialWorkoutState);
-  const [mood, setMood] = useState(initialMoodState);
-  const [stress, setStress] = useState(initialStressState);
-  
-  const allData: AllData = useMemo(() => ({
-    medication,
-    water,
-    injection,
-    workout,
-    mood,
-    stress,
-  }), [medication, water, injection, workout, mood, stress]);
+  const allData = useMemo(() => {
+    if (userData) {
+      return {
+        medication: userData.medication || initialMedicationState,
+        water: userData.water || initialWaterState,
+        injection: userData.injection || initialInjectionState,
+        workout: userData.workout || initialWorkoutState,
+        mood: userData.mood || initialMoodState,
+        stress: userData.stress || initialStressState,
+      };
+    }
+    return {
+      medication: initialMedicationState,
+      water: initialWaterState,
+      injection: initialInjectionState,
+      workout: initialWorkoutState,
+      mood: initialMoodState,
+      stress: initialStressState,
+    };
+  }, [userData]);
+
 
   const handleUpdateWorkout = (updatedEntry: WorkoutEntry) => {
-    setWorkout(prev => ({
-      ...prev,
-      history: prev.history.map(entry => entry.id === updatedEntry.id ? updatedEntry : entry)
-    }));
+    if (!userDocRef) return;
+    const updatedHistory = allData.workout.history.map(entry => entry.id === updatedEntry.id ? updatedEntry : entry);
+    setDocumentNonBlocking(userDocRef, { workout: { ...allData.workout, history: updatedHistory } }, { merge: true });
   };
 
   const handleDeleteWorkout = (entryId: string) => {
-    setWorkout(prev => ({
-      ...prev,
-      history: prev.history.filter(entry => entry.id !== entryId)
-    }));
+     if (!userDocRef) return;
+    const updatedHistory = allData.workout.history.filter(entry => entry.id !== entryId);
+    setDocumentNonBlocking(userDocRef, { workout: { ...allData.workout, history: updatedHistory } }, { merge: true });
   };
-
-  useEffect(() => {
-    if (!userDataLoading && userData) {
-      setMedication(userData.medication || initialMedicationState);
-      setWater(userData.water || initialWaterState);
-      setInjection(userData.injection || initialInjectionState);
-      setWorkout(userData.workout || initialWorkoutState);
-      setMood(userData.mood || initialMoodState);
-      setStress(userData.stress || initialStressState);
-    }
-  }, [userData, userDataLoading]);
-
-  useEffect(() => {
-    if (userDocRef && !userDataLoading) {
-      if (user) {
-        setDocumentNonBlocking(userDocRef, allData, { merge: true });
-      }
-    }
-  }, [allData, userDocRef, userDataLoading, user]);
 
   useEffect(() => {
     if (!user && !isUserLoading) {
@@ -98,7 +83,7 @@ export default function Home() {
     }
   }, [user, isUserLoading, router]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || userDataLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>
@@ -184,16 +169,16 @@ export default function Home() {
 
             {activeView === 'trackers' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                <MedicationTracker medication={medication} setMedication={setMedication} />
-                <WaterTracker water={water} setWater={setWater} />
-                <InjectionTracker injection={injection} setInjection={setInjection} />
-                <WorkoutTracker workout={workout} setWorkout={setWorkout} />
-                <MoodTracker mood={mood} setMood={setMood} />
+                <MedicationTracker medication={allData.medication} />
+                <WaterTracker water={allData.water} />
+                <InjectionTracker injection={allData.injection} />
+                <WorkoutTracker workout={allData.workout} />
+                <MoodTracker mood={allData.mood} />
                 <div className="md:col-span-2 lg:col-span-1 lg:row-start-auto">
                   <AiInsights allData={allData} />
                 </div>
                 <div className="md:col-span-2 lg:col-span-3">
-                  <AiRecommendations workoutData={workout} />
+                  <AiRecommendations workoutData={allData.workout} />
                 </div>
               </div>
             )}
@@ -210,7 +195,7 @@ export default function Home() {
             )}
 
             {activeView === 'stress' && (
-              <StressWellness stress={stress} setStress={setStress} />
+              <StressWellness stress={allData.stress} />
             )}
 
             {activeView === 'progress' && (
@@ -219,8 +204,7 @@ export default function Home() {
 
             {activeView === 'settings' && (
                 <Settings 
-                  workout={workout} 
-                  setWorkout={setWorkout} 
+                  workout={allData.workout} 
                   allData={allData} 
                 />
             )}

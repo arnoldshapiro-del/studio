@@ -10,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { BrainCircuit, Zap, Wind } from 'lucide-react';
 import { isToday, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface StressWellnessProps {
   stress: StressState;
-  setStress: React.Dispatch<React.SetStateAction<StressState>>;
 }
 
 const BoxBreathingAnimation = () => {
@@ -80,21 +82,32 @@ const BoxBreathingAnimation = () => {
 };
 
 
-const StressWellness = ({ stress, setStress }: StressWellnessProps) => {
+const StressWellness = ({ stress }: StressWellnessProps) => {
     const { toast } = useToast();
+    const { user } = useUser();
+    const firestore = useFirestore();
+
+    const userDocRef = useMemoFirebase(() => {
+      if (!user || !firestore) return null;
+      return doc(firestore, 'users', user.uid, 'data', 'latest');
+    }, [user, firestore]);
+    
     const todayStressEntry = stress.history.find(entry => isToday(parseISO(entry.date)));
-    const [stressLevel, setStressLevel] = useState<number>(todayStressEntry?.level || 5);
+    const [stressLevel, setStressLevel] = useState<number>(5);
     const [showBreathing, setShowBreathing] = useState(false);
 
+    useEffect(() => {
+      if(todayStressEntry) {
+        setStressLevel(todayStressEntry.level)
+      }
+    }, [todayStressEntry]);
+
     const handleStressLog = () => {
+        if(!userDocRef) return;
         const today = new Date().toISOString();
-        setStress(prev => {
-            const history = prev.history.filter(entry => !isToday(parseISO(entry.date)));
-            return {
-                ...prev,
-                history: [...history, { date: today, level: stressLevel }],
-            };
-        });
+        const history = stress.history.filter(entry => !isToday(parseISO(entry.date)));
+        const newHistory = [...history, { date: today, level: stressLevel }];
+        setDocumentNonBlocking(userDocRef, { stress: { history: newHistory } }, { merge: true });
         toast({ title: 'Stress Level Logged', description: `You've logged a stress level of ${stressLevel}.` });
     };
     

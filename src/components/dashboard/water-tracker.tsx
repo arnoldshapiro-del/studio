@@ -7,30 +7,37 @@ import { GlassWater, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { isToday, parseISO } from 'date-fns';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface WaterTrackerProps {
   water: WaterState;
-  setWater: React.Dispatch<React.SetStateAction<WaterState>>;
 }
 
-const WaterTracker = ({ water, setWater }: WaterTrackerProps) => {
-  const handleToggle = (period: 'morning' | 'afternoon' | 'evening') => {
-    setWater(prev => {
-      const today = new Date().toISOString();
-      const isTaken = prev.history.some(h => h.period === period && isToday(parseISO(h.date)));
+const WaterTracker = ({ water }: WaterTrackerProps) => {
+  const { user } = useUser();
+  const firestore = useFirestore();
 
-      if (isTaken) {
-        return {
-          ...prev,
-          history: prev.history.filter(h => !(h.period === period && isToday(parseISO(h.date)))),
-        };
-      } else {
-        return {
-          ...prev,
-          history: [...prev.history, { period, date: today }],
-        };
-      }
-    });
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
+  }, [user, firestore]);
+  
+  const handleToggle = (period: 'morning' | 'afternoon' | 'evening') => {
+    if(!userDocRef) return;
+
+    const today = new Date().toISOString();
+    const isTaken = water.history.some(h => h.period === period && isToday(parseISO(h.date)));
+
+    let updatedHistory;
+    if (isTaken) {
+      updatedHistory = water.history.filter(h => !(h.period === period && isToday(parseISO(h.date))));
+    } else {
+      updatedHistory = [...water.history, { period, date: today }];
+    }
+
+    setDocumentNonBlocking(userDocRef, { water: { history: updatedHistory } }, { merge: true });
   };
 
   const waterOptions: { period: 'morning' | 'afternoon' | 'evening'; label: string }[] = [

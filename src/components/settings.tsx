@@ -10,16 +10,26 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Dumbbell, Settings as SettingsIcon, FileText } from 'lucide-react';
 import HealthReport from './health-report';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface SettingsProps {
   workout: WorkoutState;
-  setWorkout: React.Dispatch<React.SetStateAction<WorkoutState>>;
   allData: AllData;
 }
 
-const Settings = ({ workout, setWorkout, allData }: SettingsProps) => {
+const Settings = ({ workout: initialWorkout, allData }: SettingsProps) => {
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [activeTab, setActiveTab] = useState('general');
+  const [workout, setWorkout] = useState(initialWorkout);
+
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
+  }, [user, firestore]);
 
   const handleGoalChange = (type: 'treadmill' | 'resistance', value: number) => {
     setWorkout(prev => ({
@@ -32,6 +42,8 @@ const Settings = ({ workout, setWorkout, allData }: SettingsProps) => {
   };
 
   const handleSaveChanges = () => {
+    if (!userDocRef) return;
+    setDocumentNonBlocking(userDocRef, { workout }, { merge: true });
     toast({
       title: 'Settings Saved',
       description: 'Your workout goals have been updated.',

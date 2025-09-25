@@ -12,16 +12,26 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { addDays, format, differenceInDays, isToday, parseISO, set } from 'date-fns';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { doc } from 'firebase/firestore';
 
 interface InjectionTrackerProps {
   injection: InjectionState;
-  setInjection: React.Dispatch<React.SetStateAction<InjectionState>>;
 }
 
-const InjectionTracker = ({ injection, setInjection }: InjectionTrackerProps) => {
+const InjectionTracker = ({ injection }: InjectionTrackerProps) => {
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [logTime, setLogTime] = useState(format(new Date(), 'HH:mm'));
+  
+  const userDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
+  }, [user, firestore]);
+
   const [tempSettings, setTempSettings] = useState({
     startDate: format(parseISO(injection.startDate), 'yyyy-MM-dd'),
     frequency: injection.frequency,
@@ -29,7 +39,6 @@ const InjectionTracker = ({ injection, setInjection }: InjectionTrackerProps) =>
 
   const { nextDueDate, status, daysDiff, isTakenToday } = useMemo(() => {
     if (!injection.history) {
-      // Handle case where history is undefined
       const nextDate = addDays(parseISO(injection.startDate), injection.frequency);
       const diff = differenceInDays(nextDate, new Date());
       let currentStatus: 'due' | 'overdue' | 'upcoming' | 'complete' = 'upcoming';
@@ -58,24 +67,25 @@ const InjectionTracker = ({ injection, setInjection }: InjectionTrackerProps) =>
   }, [injection]);
 
   const handleLogInjection = () => {
+    if (!userDocRef) return;
     const [hours, minutes] = logTime.split(':').map(Number);
     const logDate = set(new Date(), { hours, minutes });
 
-    setInjection(prev => ({
-      ...prev,
-      history: [...(prev.history || []), { id: crypto.randomUUID(), date: logDate.toISOString() }],
-    }));
+    const updatedHistory = [...(injection.history || []), { id: crypto.randomUUID(), date: logDate.toISOString() }];
+    setDocumentNonBlocking(userDocRef, { injection: { ...injection, history: updatedHistory } }, { merge: true });
     toast({ title: "Injection Logged!", description: `Logged at ${format(logDate, 'p')}. Great job staying on track.` });
   };
   
   const handleSaveSettings = () => {
+    if (!userDocRef) return;
     const newStartDate = new Date(tempSettings.startDate);
-    setInjection(prev => ({
-      ...prev,
+    const updatedInjection = {
+      ...injection,
       startDate: newStartDate.toISOString(),
       frequency: tempSettings.frequency,
       history: [], // Reset history when settings change
-    }));
+    };
+    setDocumentNonBlocking(userDocRef, { injection: updatedInjection }, { merge: true });
     setIsSettingsOpen(false);
     toast({ title: "Settings Saved", description: "Your injection schedule has been updated." });
   };
