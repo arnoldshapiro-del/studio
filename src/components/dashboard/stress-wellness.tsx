@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { StressState, MeditationState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -105,7 +105,7 @@ const MeditationTimer = () => {
             setIsActive(false);
             if (!userDocRef) return;
             const today = new Date().toISOString();
-            const newHistory = [...meditation.history, { date: today, duration }];
+            const newHistory = [...(meditation.history || []), { date: today, duration }];
             setDocumentNonBlocking(userDocRef, { meditation: { ...meditation, history: newHistory } }, { merge: true });
             toast({ title: 'Meditation Complete!', description: `You completed a ${duration}-minute session.` });
             new Audio('/assets/notification.mp3').play().catch(e => console.error("Error playing sound", e));

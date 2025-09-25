@@ -1,5 +1,4 @@
 
-
 export type TimeOfDay = {
   taken: boolean;
   time: string;

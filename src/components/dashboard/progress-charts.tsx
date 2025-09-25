@@ -5,9 +5,9 @@ import { useMemo } from 'react';
 import type { AllData } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Pie, PieChart, Cell, Line, LineChart, ComposedChart } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Pie, PieChart, Cell, Line, ComposedChart } from 'recharts';
 import { subDays, format, isAfter, parseISO } from 'date-fns';
-import { Footprints, Droplet, HeartPulse, Zap } from 'lucide-react';
+import { Footprints, Droplet, Zap } from 'lucide-react';
 
 interface ProgressChartsProps {
   allData: AllData;
@@ -155,8 +155,8 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
                         tickMargin={10} 
                         interval={3}
                     />
-                    <YAxis yAxisId="stress" orientation="left" domain={[1, 10]} ticks={[1, 5, 10]} allowDecimals={false} />
-                    <YAxis yAxisId="mood" orientation="right" domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} allowDecimals={false} />
+                    <YAxis yAxisId="stress" orientation="left" domain={[1, 10]} ticks={[1, 5, 10]} allowDecimals={false} label={{ value: 'Stress', angle: -90, position: 'insideLeft' }} />
+                    <YAxis yAxisId="mood" orientation="right" domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tickFormatter={(val) => VALUE_TO_MOOD[val]} allowDecimals={false} label={{ value: 'Mood', angle: 90, position: 'insideRight' }} />
                     <ChartTooltip
                          content={
                             <ChartTooltipContent
