@@ -1,98 +1,62 @@
 /**
- * @file Firestore Security Rules
- * @version 2
+ * @fileoverview Firestore Security Rules for the application.
  *
- * @description
- * This ruleset enforces a strict user-ownership model for all data. Each user has a dedicated data
- * store under `/users/{userId}/data/{docId}`, and only the authenticated user with the matching
- * `userId` can access their own data. All read and write operations are protected by this ownership check.
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for all data. Each user has exclusive access to their own data.
  *
  * Data Structure:
- * All data is nested under `/users/{userId}/data/{docId}`. This includes a single `AllData` document
- * containing nested objects for medication, water, injection, and workout tracking.
+ * All data is nested under /users/{userId}/data/{docId}.
  *
  * Key Security Decisions:
- * - User listing is disallowed.
- * - No global admin roles are defined, so all data access is user-centric.
- * - The security posture defaults to strict owner-only access.
- * - Data validation is relaxed in this prototype to allow for rapid schema iteration,
- *   focusing instead on authorization.
+ * - Users can only read and write their own data.
+ * - Listing user documents is allowed only for the owning user.
+ * - Data validation is minimized in the prototyping phase to allow for rapid iteration. Only authorization-critical fields are validated.
  *
  * Denormalization for Authorization:
- * The rules leverage the `userId` present in the path `/users/{userId}/data/{docId}` to authorize
- * requests. This avoids the need for `get()` calls to other documents.
+ *  - The user ID is implicitly denormalized into the path `/users/{userId}/...`, which is then validated against `request.auth.uid`.
  *
  * Structural Segregation:
- * All user data is kept private under their respective `userId`. There is no concept of public data.
+ *  - All user data is stored under the /users/{userId} path, ensuring clear separation and simplified security rules.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is authenticated.
-     * @return {boolean} True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the authenticated user's UID matches the provided userId.
-     * @param {string} userId The user ID to compare against the authenticated user's UID.
-     * @return {boolean} True if the UIDs match, false otherwise.
-     */
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the existing document.
-     * @param {string} userId The user ID to compare against the authenticated user's UID.
-     * @return {boolean} True if the UIDs match and the document exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Enforces document ownership for all read and write operations under a user's data path.
+     * @description Controls access to user data documents.
      * @path /users/{userId}/data/{docId}
-     *
-     * @allow (get) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can read their own 'AllData' document:
-     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
-     * @deny (get) User 'OtherUserId' cannot read 'Me490f3NGoNLBa0Y0So7r33ktlj1' data:
-     *        - auth.uid: 'OtherUserId'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
-     *
-     * @allow (create) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can create their 'AllData' document:
-     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/newDoc
-     * @deny (create) User 'OtherUserId' cannot create data under 'Me490f3NGoNLBa0Y0So7r33ktlj1' path:
-     *        - auth.uid: 'OtherUserId'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/newDoc
-     *
-     * @allow (update) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can update their 'AllData' document:
-     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
-     * @deny (update) User 'OtherUserId' cannot update 'Me490f3NGoNLBa0Y0So7r33ktlj1' data:
-     *        - auth.uid: 'OtherUserId'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
-     *
-     * @allow (delete) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can delete their 'AllData' document:
-     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
-     * @deny (delete) User 'OtherUserId' cannot delete 'Me490f3NGoNLBa0Y0So7r33ktlj1' data:
-     *        - auth.uid: 'OtherUserId'
-     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
-     *
-     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     * @allow (create) - User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can create a document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
+     * @deny (create) - User 'OtherUser' cannot create a document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
+     * @allow (get, list) - User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can read data at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
+     * @deny (get, list) - User 'OtherUser' cannot read data at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
+     * @allow (update, delete) - User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can update/delete data at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
+     * @deny (update, delete) - User 'OtherUser' cannot update/delete data at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
+     * @principle Enforces document ownership for all operations.
      */
     match /users/{userId}/data/{docId} {
+      // Helper function to check if the user is signed in
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      // Helper function to check if the requested user ID matches the authenticated user's ID.
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
+      // Helper function to check if the user is the owner and the document exists.
+      function isExistingOwner(userId) {
+          return isOwner(userId) && resource != null;
+      }
+
+      // Allow reads (get and list) by the owner.
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
+
+      // Allow create only if the user is the owner. Also, enforce that the userId matches the path.
       allow create: if isOwner(userId);
+
+      // Allow update and delete only if the user is the existing owner.
       allow update: if isExistingOwner(userId);
       allow delete: if isExistingOwner(userId);
     }
