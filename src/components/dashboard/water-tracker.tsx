@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { WaterState } from '@/lib/types';
@@ -5,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { GlassWater, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { isToday, parseISO } from 'date-fns';
 
 interface WaterTrackerProps {
   water: WaterState;
@@ -13,17 +15,33 @@ interface WaterTrackerProps {
 
 const WaterTracker = ({ water, setWater }: WaterTrackerProps) => {
   const handleToggle = (period: 'morning' | 'afternoon' | 'evening') => {
-    setWater(prev => ({
-      ...prev,
-      [period]: !prev[period],
-    }));
+    setWater(prev => {
+      const today = new Date().toISOString();
+      const isTaken = prev.history.some(h => h.period === period && isToday(parseISO(h.date)));
+
+      if (isTaken) {
+        return {
+          ...prev,
+          history: prev.history.filter(h => !(h.period === period && isToday(parseISO(h.date)))),
+        };
+      } else {
+        return {
+          ...prev,
+          history: [...prev.history, { period, date: today }],
+        };
+      }
+    });
   };
 
-  const waterOptions: { period: keyof WaterState; label: string }[] = [
+  const waterOptions: { period: 'morning' | 'afternoon' | 'evening'; label: string }[] = [
     { period: 'morning', label: 'Morning' },
     { period: 'afternoon', label: 'Afternoon' },
     { period: 'evening', label: 'Evening' },
   ];
+  
+  const isTaken = (period: 'morning' | 'afternoon' | 'evening') => {
+    return water.history.some(h => h.period === period && isToday(parseISO(h.date)));
+  }
 
   return (
     <Card>
@@ -38,20 +56,20 @@ const WaterTracker = ({ water, setWater }: WaterTrackerProps) => {
         {waterOptions.map(({ period, label }) => (
           <Button
             key={period}
-            variant={water[period] ? 'default' : 'outline'}
+            variant={isTaken(period) ? 'default' : 'outline'}
             onClick={() => handleToggle(period)}
             className={cn(
               "flex-1 justify-start text-left h-16 flex-col items-start p-3 transition-all duration-300",
-              water[period] && "bg-accent text-accent-foreground hover:bg-accent/90"
+              isTaken(period) && "bg-accent text-accent-foreground hover:bg-accent/90"
             )}
-            aria-pressed={water[period]}
+            aria-pressed={isTaken(period)}
           >
             <div className="flex items-center gap-2 w-full">
               <p className="font-semibold flex-1">{label}</p>
-              {water[period] && <CheckCircle2 className="w-5 h-5" />}
+              {isTaken(period) && <CheckCircle2 className="w-5 h-5" />}
             </div>
             <p className="text-xs font-normal opacity-70">
-              {water[period] ? 'Completed!' : 'Mark as done'}
+              {isTaken(period) ? 'Completed!' : 'Mark as done'}
             </p>
           </Button>
         ))}

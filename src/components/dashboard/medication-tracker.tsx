@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { MedicationState } from '@/lib/types';
@@ -5,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Pill, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { isToday, parseISO } from 'date-fns';
 
 interface MedicationTrackerProps {
   medication: MedicationState;
@@ -14,10 +15,24 @@ interface MedicationTrackerProps {
 
 const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps) => {
   const handleToggle = (period: 'morning' | 'evening') => {
-    setMedication(prev => ({
-      ...prev,
-      [period]: { ...prev[period], taken: !prev[period].taken },
-    }));
+    setMedication(prev => {
+      const today = new Date().toISOString();
+      const isTaken = prev.history.some(h => h.period === period && isToday(parseISO(h.date)));
+
+      if (isTaken) {
+        // Remove the entry for today
+        return {
+          ...prev,
+          history: prev.history.filter(h => !(h.period === period && isToday(parseISO(h.date)))),
+        };
+      } else {
+        // Add the entry for today
+        return {
+          ...prev,
+          history: [...prev.history, { period, date: today }],
+        };
+      }
+    });
   };
 
   const handleTimeChange = (period: 'morning' | 'evening', time: string) => {
@@ -26,6 +41,9 @@ const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps
       [period]: { ...prev[period], time },
     }));
   };
+
+  const isMorningTaken = medication.history.some(h => h.period === 'morning' && isToday(parseISO(h.date)));
+  const isEveningTaken = medication.history.some(h => h.period === 'evening' && isToday(parseISO(h.date)));
 
   return (
     <Card>
@@ -51,7 +69,7 @@ const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps
             </div>
           </div>
           <Switch
-            checked={medication.morning.taken}
+            checked={isMorningTaken}
             onCheckedChange={() => handleToggle('morning')}
             aria-label="Toggle morning medication"
           />
@@ -71,7 +89,7 @@ const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps
             </div>
           </div>
           <Switch
-            checked={medication.evening.taken}
+            checked={isEveningTaken}
             onCheckedChange={() => handleToggle('evening')}
             aria-label="Toggle evening medication"
           />

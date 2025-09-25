@@ -1,34 +1,37 @@
+
 export type TimeOfDay = {
   taken: boolean;
   time: string;
 };
 
+export type DatedEntry = {
+  date: string; // ISO string
+};
+
 export type MedicationState = {
-  morning: TimeOfDay;
-  evening: TimeOfDay;
+  morning: { time: string };
+  evening: { time: string };
+  history: (DatedEntry & { period: 'morning' | 'evening' })[];
 };
 
 export type WaterState = {
-  morning: boolean;
-  afternoon: boolean;
-  evening: boolean;
+  history: (DatedEntry & { period: 'morning' | 'afternoon' | 'evening' })[];
 };
 
 export type InjectionState = {
   startDate: string; // ISO string
   frequency: number; // in days
-  history: string[]; // Array of ISO strings
+  history: string[]; // Array of ISO strings for dates
 };
 
 export type WorkoutState = {
   treadmill: {
-    sessionsThisWeek: number;
     goal: number;
   };
   resistance: {
-    sessionsThisWeek: number;
     goal: number;
   };
+  history: (DatedEntry & { type: 'treadmill' | 'resistance' })[];
 };
 
 export type AllData = {

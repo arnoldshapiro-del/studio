@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition } from 'react';
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Lightbulb, Loader2 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { isThisWeek, parseISO } from 'date-fns';
 
 interface AiRecommendationsProps {
   workoutData: WorkoutState;
@@ -20,8 +22,14 @@ const AiRecommendations = ({ workoutData }: AiRecommendationsProps) => {
 
   const handleGenerateRecommendations = () => {
     startTransition(async () => {
+      const getSessionsThisWeek = (type: 'treadmill' | 'resistance') => {
+        return workoutData.history.filter(h => h.type === type && isThisWeek(parseISO(h.date), { weekStartsOn: 1 })).length;
+      }
+      const treadmillSessionsThisWeek = getSessionsThisWeek('treadmill');
+      const resistanceSessionsThisWeek = getSessionsThisWeek('resistance');
+
       const formattedData = {
-        userRoutineData: `Treadmill: ${workoutData.treadmill.sessionsThisWeek}/${workoutData.treadmill.goal} sessions. Resistance: ${workoutData.resistance.sessionsThisWeek}/${workoutData.resistance.goal} sessions.`,
+        userRoutineData: `Treadmill: ${treadmillSessionsThisWeek}/${workoutData.treadmill.goal} sessions. Resistance: ${resistanceSessionsThisWeek}/${workoutData.resistance.goal} sessions.`,
         userPreferences: preferences,
       };
       const result = await getRecommendationsAction(formattedData);

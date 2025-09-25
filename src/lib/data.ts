@@ -1,3 +1,4 @@
+
 import type {
   MedicationState,
   WaterState,
@@ -6,14 +7,13 @@ import type {
 } from './types';
 
 export const initialMedicationState: MedicationState = {
-  morning: { taken: false, time: '08:00' },
-  evening: { taken: false, time: '20:00' },
+  morning: { time: '08:00' },
+  evening: { time: '20:00' },
+  history: [],
 };
 
 export const initialWaterState: WaterState = {
-  morning: false,
-  afternoon: false,
-  evening: false,
+  history: [],
 };
 
 export const initialInjectionState: InjectionState = {
@@ -24,11 +24,10 @@ export const initialInjectionState: InjectionState = {
 
 export const initialWorkoutState: WorkoutState = {
   treadmill: {
-    sessionsThisWeek: 0,
     goal: 4,
   },
   resistance: {
-    sessionsThisWeek: 0,
     goal: 2,
   },
+  history: [],
 };

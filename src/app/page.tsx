@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import type { MedicationState, WaterState, InjectionState, WorkoutState, AllData } from '@/lib/types';
+import type { AllData } from '@/lib/types';
 import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState } from '@/lib/data';
 
 import Header from '@/components/header';
@@ -12,11 +13,13 @@ import InjectionTracker from '@/components/dashboard/injection-tracker';
 import WorkoutTracker from '@/components/dashboard/workout-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
+import CalendarView from '@/components/dashboard/calendar-view';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function Home() {
   const router = useRouter();
@@ -25,18 +28,17 @@ export default function Home() {
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    // Changed to point to a specific document 'data' inside the user's collection
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
 
   const { data: userData, isLoading: userDataLoading } = useDoc<AllData>(userDocRef);
 
-  const [medication, setMedication] = useState<MedicationState>(initialMedicationState);
-  const [water, setWater] = useState<WaterState>(initialWaterState);
-  const [injection, setInjection] = useState<InjectionState>(initialInjectionState);
-  const [workout, setWorkout] = useState<WorkoutState>(initialWorkoutState);
+  const [medication, setMedication] = useState(initialMedicationState);
+  const [water, setWater] = useState(initialWaterState);
+  const [injection, setInjection] = useState(initialInjectionState);
+  const [workout, setWorkout] = useState(initialWorkoutState);
   
-  const allData = useMemo(() => ({
+  const allData: AllData = useMemo(() => ({
     medication,
     water,
     injection,
@@ -54,7 +56,6 @@ export default function Home() {
 
   useEffect(() => {
     if (userDocRef && !userDataLoading) {
-      // Only write if there is a user and the initial data has been loaded or is empty
       if (user) {
         setDocumentNonBlocking(userDocRef, allData, { merge: true });
       }
@@ -80,18 +81,29 @@ export default function Home() {
       <Header />
       <main className="flex-1 p-4 sm:p-6 md:p-8">
         <DashboardHeader />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          <MedicationTracker medication={medication} setMedication={setMedication} />
-          <WaterTracker water={water} setWater={setWater} />
-          <InjectionTracker injection={injection} setInjection={setInjection} />
-          <WorkoutTracker workout={workout} setWorkout={setWorkout} />
-          <div className="md:col-span-2 lg:col-span-1 lg:row-start-2">
-             <AiInsights allData={allData} />
-          </div>
-          <div className="md:col-span-2 lg:col-span-3">
-            <AiRecommendations workoutData={workout} />
-          </div>
-        </div>
+        <Tabs defaultValue="trackers" className="mt-8">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="trackers">Daily Trackers</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          </TabsList>
+          <TabsContent value="trackers">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+              <MedicationTracker medication={medication} setMedication={setMedication} />
+              <WaterTracker water={water} setWater={setWater} />
+              <InjectionTracker injection={injection} setInjection={setInjection} />
+              <WorkoutTracker workout={workout} setWorkout={setWorkout} />
+              <div className="md:col-span-2 lg:col-span-1 lg:row-start-2">
+                <AiInsights allData={allData} />
+              </div>
+              <div className="md:col-span-2 lg:col-span-3">
+                <AiRecommendations workoutData={workout} />
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="calendar">
+            <CalendarView allData={allData} />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

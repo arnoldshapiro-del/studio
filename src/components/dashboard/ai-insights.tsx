@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition } from 'react';
@@ -6,6 +7,7 @@ import { getInsightsAction } from '@/app/actions';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, Loader2 } from 'lucide-react';
+import { isThisWeek, parseISO } from 'date-fns';
 
 interface AiInsightsProps {
   allData: AllData;
@@ -17,10 +19,16 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
 
   const handleGenerateInsights = () => {
     startTransition(async () => {
+      const getSessionsThisWeek = (type: 'treadmill' | 'resistance') => {
+        return allData.workout.history.filter(h => h.type === type && isThisWeek(parseISO(h.date), { weekStartsOn: 1 })).length;
+      }
+      const treadmillSessionsThisWeek = getSessionsThisWeek('treadmill');
+      const resistanceSessionsThisWeek = getSessionsThisWeek('resistance');
+
       const formattedData = {
-        medicationData: `Morning: ${allData.medication.morning.taken ? 'Taken' : 'Not taken'} at ${allData.medication.morning.time}. Evening: ${allData.medication.evening.taken ? 'Taken' : 'Not taken'} at ${allData.medication.evening.time}.`,
-        waterIntakeData: `Morning: ${allData.water.morning ? 'Yes' : 'No'}. Afternoon: ${allData.water.afternoon ? 'Yes' : 'No'}. Evening: ${allData.water.evening ? 'Yes' : 'No'}.`,
-        workoutData: `Treadmill: ${allData.workout.treadmill.sessionsThisWeek}/${allData.workout.treadmill.goal} sessions. Resistance: ${allData.workout.resistance.sessionsThisWeek}/${allData.workout.resistance.goal} sessions.`,
+        medicationData: `Morning taken: ${allData.medication.history.some(h => h.period === 'morning')} at ${allData.medication.morning.time}. Evening taken: ${allData.medication.history.some(h => h.period === 'evening')} at ${allData.medication.evening.time}.`,
+        waterIntakeData: `Morning: ${allData.water.history.some(h => h.period === 'morning') ? 'Yes' : 'No'}. Afternoon: ${allData.water.history.some(h => h.period === 'afternoon') ? 'Yes' : 'No'}. Evening: ${allData.water.history.some(h => h.period === 'evening') ? 'Yes' : 'No'}.`,
+        workoutData: `Treadmill: ${treadmillSessionsThisWeek}/${allData.workout.treadmill.goal} sessions. Resistance: ${resistanceSessionsThisWeek}/${allData.workout.resistance.goal} sessions.`,
       };
       const result = await getInsightsAction(formattedData);
       setInsights(result);

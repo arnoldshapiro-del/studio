@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { WorkoutState } from '@/lib/types';
@@ -5,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Footprints, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { isThisWeek, parseISO } from 'date-fns';
 
 interface WorkoutTrackerProps {
   workout: WorkoutState;
@@ -15,20 +17,23 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
 
   const handleLogWorkout = (type: 'treadmill' | 'resistance') => {
     setWorkout(prev => {
-      const currentSessions = prev[type].sessionsThisWeek;
-      const goal = prev[type].goal;
+      const today = new Date().toISOString();
       return {
         ...prev,
-        [type]: {
-          ...prev[type],
-          sessionsThisWeek: currentSessions < goal ? currentSessions + 1 : currentSessions,
-        }
+        history: [...prev.history, { type, date: today }],
       };
     });
   };
+  
+  const getSessionsThisWeek = (type: 'treadmill' | 'resistance') => {
+    return workout.history.filter(h => h.type === type && isThisWeek(parseISO(h.date), { weekStartsOn: 1 })).length;
+  }
 
-  const treadmillProgress = (workout.treadmill.sessionsThisWeek / workout.treadmill.goal) * 100;
-  const resistanceProgress = (workout.resistance.sessionsThisWeek / workout.resistance.goal) * 100;
+  const treadmillSessionsThisWeek = getSessionsThisWeek('treadmill');
+  const resistanceSessionsThisWeek = getSessionsThisWeek('resistance');
+
+  const treadmillProgress = (treadmillSessionsThisWeek / workout.treadmill.goal) * 100;
+  const resistanceProgress = (resistanceSessionsThisWeek / workout.resistance.goal) * 100;
 
   return (
     <Card>
@@ -47,7 +52,7 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
               <p className="font-semibold">Treadmill</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              {workout.treadmill.sessionsThisWeek} / {workout.treadmill.goal} sessions
+              {treadmillSessionsThisWeek} / {workout.treadmill.goal} sessions
             </p>
           </div>
           <Progress value={treadmillProgress} className="h-2" />
@@ -56,7 +61,7 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
             variant="outline"
             className="mt-3 w-full"
             onClick={() => handleLogWorkout('treadmill')}
-            disabled={workout.treadmill.sessionsThisWeek >= workout.treadmill.goal}
+            disabled={treadmillSessionsThisWeek >= workout.treadmill.goal}
           >
             Log 20min Treadmill Session
           </Button>
@@ -70,7 +75,7 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
               <p className="font-semibold">Resistance Training</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              {workout.resistance.sessionsThisWeek} / {workout.resistance.goal} sessions
+              {resistanceSessionsThisWeek} / {workout.resistance.goal} sessions
             </p>
           </div>
           <Progress value={resistanceProgress} className="h-2" />
@@ -79,7 +84,7 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
             variant="outline"
             className="mt-3 w-full"
             onClick={() => handleLogWorkout('resistance')}
-            disabled={workout.resistance.sessionsThisWeek >= workout.resistance.goal}
+            disabled={resistanceSessionsThisWeek >= workout.resistance.goal}
           >
             Log 30-60min Resistance Session
           </Button>
