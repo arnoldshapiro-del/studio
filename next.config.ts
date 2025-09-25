@@ -30,9 +30,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    serverComponentsExternalPackages: ['barcode-detector/pure'],
-  },
+  serverExternalPackages: ['barcode-detector/pure'],
 };
 
 export default nextConfig;
