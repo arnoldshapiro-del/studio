@@ -29,7 +29,8 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
         medicationData: `Morning taken: ${allData.medication.history.some(h => h.period === 'morning')} at ${allData.medication.morning.time}. Evening taken: ${allData.medication.history.some(h => h.period === 'evening')} at ${allData.medication.evening.time}.`,
         waterIntakeData: `Morning: ${allData.water.history.some(h => h.period === 'morning') ? 'Yes' : 'No'}. Afternoon: ${allData.water.history.some(h => h.period === 'afternoon') ? 'Yes' : 'No'}. Evening: ${allData.water.history.some(h => h.period === 'evening') ? 'Yes' : 'No'}.`,
         workoutData: `Treadmill: ${treadmillSessionsThisWeek}/${allData.workout.treadmill.goal} sessions. Resistance: ${resistanceSessionsThisWeek}/${allData.workout.resistance.goal} sessions. Historical workouts: ${JSON.stringify(allData.workout.history.slice(-10))}`,
-        moodData: `Recent moods: ${JSON.stringify(allData.mood.history.slice(-10))}`
+        moodData: `Recent moods: ${JSON.stringify(allData.mood.history.slice(-10))}`,
+        stressData: `Recent stress levels: ${JSON.stringify(allData.stress.history.slice(-10))}`,
       };
       const result = await getInsightsAction(formattedData);
       setInsights(result);
@@ -76,5 +77,3 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
 };
 
 export default AiInsights;
-
-    

@@ -9,6 +9,8 @@ import {
   getOptimalWorkoutRecommendations,
   OptimalWorkoutRecommendationsInput,
 } from '@/ai/flows/optimal-workout-recommendations';
+import { diagnoseFood, DiagnoseFoodInput, DiagnoseFoodOutput } from '@/ai/flows/diagnose-food-flow';
+
 
 export async function getInsightsAction(
   input: PersonalizedHabitInsightsInput
@@ -32,4 +34,13 @@ export async function getRecommendationsAction(
     console.error(error);
     return 'Sorry, I was unable to generate recommendations at this time.';
   }
+}
+
+export async function diagnoseFoodAction(input: DiagnoseFoodInput): Promise<DiagnoseFoodOutput | string> {
+    try {
+        return await diagnoseFood(input);
+    } catch (error) {
+        console.error(error);
+        return "Sorry, I was unable to analyze the food at this time.";
+    }
 }

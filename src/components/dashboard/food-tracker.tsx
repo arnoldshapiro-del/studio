@@ -13,7 +13,8 @@ import { Button } from '@/components/ui/button';
 import { Camera, Upload, Check, X, Loader2, ScanLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { diagnoseFood, DiagnoseFoodOutput } from '@/ai/flows/diagnose-food-flow';
+import { diagnoseFoodAction } from '@/app/actions';
+import type { DiagnoseFoodOutput } from '@/ai/flows/diagnose-food-flow';
 import {
   Table,
   TableBody,
@@ -94,8 +95,12 @@ const FoodTracker = () => {
     setIsPending(true);
     setAnalysis(null);
     try {
-      const result = await diagnoseFood({ photoDataUri: photo });
-      setAnalysis(result);
+      const result = await diagnoseFoodAction({ photoDataUri: photo });
+       if (typeof result === 'string') {
+        toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
+      } else {
+        setAnalysis(result);
+      }
     } catch (error) {
       console.error(error);
       toast({
@@ -121,8 +126,12 @@ const FoodTracker = () => {
       if (barcodes.length > 0) {
         const barcodeValue = barcodes[0].rawValue;
         toast({ title: 'Barcode Found!', description: barcodeValue });
-        const result = await diagnoseFood({ barcode: barcodeValue });
-        setAnalysis(result);
+        const result = await diagnoseFoodAction({ barcode: barcodeValue });
+         if (typeof result === 'string') {
+          toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
+        } else {
+          setAnalysis(result);
+        }
       } else {
         toast({ variant: 'destructive', title: 'No barcode detected.' });
       }
@@ -285,7 +294,7 @@ const FoodTracker = () => {
           <Button
             onClick={analyzePhoto}
             className="flex-1"
-            disabled={isPending || !photo}
+            disabled={isPending || (!photo && !analysis)}
           >
             {isPending ? (
               <Loader2 className="animate-spin mr-2" />
