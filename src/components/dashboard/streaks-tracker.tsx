@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import type { AllData } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Flame, Droplet, Pill } from 'lucide-react';
+import { Flame, Droplet, Pill, Footprints } from 'lucide-react';
 import { differenceInCalendarDays, parseISO, startOfDay, subDays, format } from 'date-fns';
 
 interface StreaksTrackerProps {
@@ -58,10 +58,17 @@ const StreakItem = ({ icon: Icon, label, value }: { icon: React.ElementType, lab
 
 const StreaksTracker = ({ allData }: StreaksTrackerProps) => {
   const medicationStreak = useMemo(() => {
-    const morningDates = allData.medication.history.filter(h => h.period === 'morning').map(h => h.date);
-    const eveningDates = allData.medication.history.filter(h => h.period === 'evening').map(h => h.date);
-    // For medication, consider the day complete if both doses were taken
-    const completeDays = morningDates.filter(md => eveningDates.some(ed => format(parseISO(md), 'yyyy-MM-dd') === format(parseISO(ed), 'yyyy-MM-dd')));
+    const medicationByDay = allData.medication.history.reduce((acc, h) => {
+        const day = format(parseISO(h.date), 'yyyy-MM-dd');
+        if (!acc[day]) acc[day] = new Set();
+        acc[day].add(h.period);
+        return acc;
+    }, {} as Record<string, Set<string>>);
+
+    const completeDays = Object.entries(medicationByDay)
+        .filter(([, periods]) => periods.size === 2)
+        .map(([day]) => day);
+
     return calculateStreak(completeDays);
   }, [allData.medication.history]);
 
@@ -97,7 +104,7 @@ const StreaksTracker = ({ allData }: StreaksTrackerProps) => {
       <CardContent className="space-y-3">
         <StreakItem icon={Pill} label="Medication" value={medicationStreak} />
         <StreakItem icon={Droplet} label="Water Intake" value={waterStreak} />
-        <StreakItem icon={Flame} label="Workouts" value={workoutStreak} />
+        <StreakItem icon={Footprints} label="Workouts" value={workoutStreak} />
       </CardContent>
     </Card>
   );
