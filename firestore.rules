@@ -1,49 +1,100 @@
 /**
- * @description This ruleset enforces a strict user-ownership model for all data. Each user can only access their own data.
- * @dataStructure All user data is nested under `/users/{userId}/data/{docId}`, where `{userId}` is the authenticated user's UID.
- * @keySecurityDecisions
- *   - Users can only read and write their own data.
- *   - Data schema is not strictly enforced during this prototyping phase.
- * @denormalizationForAuthorization N/A - Simple ownership model doesn't require denormalization.
- * @structuralSegregation N/A
+ * @file Firestore Security Rules
+ * @version 2
+ *
+ * @description
+ * This ruleset enforces a strict user-ownership model for all data. Each user has a dedicated data
+ * store under `/users/{userId}/data/{docId}`, and only the authenticated user with the matching
+ * `userId` can access their own data. All read and write operations are protected by this ownership check.
+ *
+ * Data Structure:
+ * All data is nested under `/users/{userId}/data/{docId}`. This includes a single `AllData` document
+ * containing nested objects for medication, water, injection, and workout tracking.
+ *
+ * Key Security Decisions:
+ * - User listing is disallowed.
+ * - No global admin roles are defined, so all data access is user-centric.
+ * - The security posture defaults to strict owner-only access.
+ * - Data validation is relaxed in this prototype to allow for rapid schema iteration,
+ *   focusing instead on authorization.
+ *
+ * Denormalization for Authorization:
+ * The rules leverage the `userId` present in the path `/users/{userId}/data/{docId}` to authorize
+ * requests. This avoids the need for `get()` calls to other documents.
+ *
+ * Structural Segregation:
+ * All user data is kept private under their respective `userId`. There is no concept of public data.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants access to user-specific data documents.
-     * @path /users/{userId}/data/{docId}
-     * @allow (get) User with UID 'Me490f3NGoNLBa0Y0So7r33ktlj1' can read their data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
-     * @allow (create) User with UID 'Me490f3NGoNLBa0Y0So7r33ktlj1' can create a data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/someId.
-     * @allow (update) User with UID 'Me490f3NGoNLBa0Y0So7r33ktlj1' can update their data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
-     * @allow (delete) User with UID 'Me490f3NGoNLBa0Y0So7r33ktlj1' can delete their data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
-     * @deny (get) User with UID 'otherUser' cannot read data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
-     * @deny (create) User with UID 'otherUser' cannot create a data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/someId.
-     * @deny (update) User with UID 'otherUser' cannot update data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
-     * @deny (delete) User with UID 'otherUser' cannot delete data document at /users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest.
-     * @principle Enforces document ownership for all data access.
+     * @description Checks if the request is authenticated.
+     * @return {boolean} True if the user is signed in, false otherwise.
      */
-    match /users/{userId}/data/{docId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isExistingOwner(userId);
-      allow delete: if isSignedIn() && isExistingOwner(userId);
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-  }
+    /**
+     * @description Checks if the authenticated user's UID matches the provided userId.
+     * @param {string} userId The user ID to compare against the authenticated user's UID.
+     * @return {boolean} True if the UIDs match, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
 
-  // Helper functions
-  function isSignedIn() {
-    return request.auth != null;
-  }
-
-  function isOwner(userId) {
-    return request.auth.uid == userId;
-  }
-
+    /**
+     * @description Checks if the authenticated user is the owner of the existing document.
+     * @param {string} userId The user ID to compare against the authenticated user's UID.
+     * @return {boolean} True if the UIDs match and the document exists, false otherwise.
+     */
     function isExistingOwner(userId) {
-    return isSignedIn() && isOwner(userId) && resource != null;
+        return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Enforces document ownership for all read and write operations under a user's data path.
+     * @path /users/{userId}/data/{docId}
+     *
+     * @allow (get) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can read their own 'AllData' document:
+     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
+     * @deny (get) User 'OtherUserId' cannot read 'Me490f3NGoNLBa0Y0So7r33ktlj1' data:
+     *        - auth.uid: 'OtherUserId'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
+     *
+     * @allow (create) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can create their 'AllData' document:
+     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/newDoc
+     * @deny (create) User 'OtherUserId' cannot create data under 'Me490f3NGoNLBa0Y0So7r33ktlj1' path:
+     *        - auth.uid: 'OtherUserId'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/newDoc
+     *
+     * @allow (update) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can update their 'AllData' document:
+     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
+     * @deny (update) User 'OtherUserId' cannot update 'Me490f3NGoNLBa0Y0So7r33ktlj1' data:
+     *        - auth.uid: 'OtherUserId'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
+     *
+     * @allow (delete) User 'Me490f3NGoNLBa0Y0So7r33ktlj1' can delete their 'AllData' document:
+     *        - auth.uid: 'Me490f3NGoNLBa0Y0So7r33ktlj1'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
+     * @deny (delete) User 'OtherUserId' cannot delete 'Me490f3NGoNLBa0Y0So7r33ktlj1' data:
+     *        - auth.uid: 'OtherUserId'
+     *        - path: /databases/(default)/documents/users/Me490f3NGoNLBa0Y0So7r33ktlj1/data/latest
+     *
+     * @principle Enforces document ownership for writes and restricts access to a user's own data tree.
+     */
+    match /users/{userId}/data/{docId} {
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
+    }
   }
 }
