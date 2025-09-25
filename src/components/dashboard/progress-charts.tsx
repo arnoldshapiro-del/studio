@@ -39,7 +39,7 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
   }, [allData.workout.history, last7Days]);
 
   const waterChartData = useMemo(() => {
-    const data: Record<string, number> = { morning: 0, afternoon: 0, evening: 0 };
+    const data: Record<string, number> = { Morning: 0, Afternoon: 0, Evening: 0 };
     allData.water.history.forEach(h => {
         if (isAfter(parseISO(h.date), subDays(new Date(), 30))) {
             const period = h.period.charAt(0).toUpperCase() + h.period.slice(1);
@@ -151,7 +151,11 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
                     />
                     <ChartTooltip 
                         content={<ChartTooltipContent
-                            formatter={(value, name) => `${['Awful', 'Bad', 'Neutral', 'Good', 'Great'][value as number - 1]}` }
+                            formatter={(value) => {
+                                if (typeof value !== 'number') return value;
+                                const moodLabel = Object.keys(MOOD_TO_VALUE).find(key => MOOD_TO_VALUE[key] === value);
+                                return moodLabel ? moodLabel.charAt(0).toUpperCase() + moodLabel.slice(1) : value;
+                            } }
                             labelFormatter={(label) => `Mood on ${label}`}
                         />}
                     />
