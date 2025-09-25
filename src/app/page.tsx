@@ -218,7 +218,11 @@ export default function Home() {
             )}
 
             {activeView === 'settings' && (
-                <Settings workout={workout} setWorkout={setWorkout} />
+                <Settings 
+                  workout={workout} 
+                  setWorkout={setWorkout} 
+                  allData={allData} 
+                />
             )}
 
             {activeView === 'help' && (
