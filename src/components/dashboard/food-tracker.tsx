@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button';
 import { Camera, Upload, Check, X, Loader2, ScanLine, Utensils } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { diagnoseFoodAction } from '@/app/actions';
 import type { DiagnoseFoodOutput } from '@/ai/flows/diagnose-food-flow';
 import {
   Table,
@@ -102,27 +101,48 @@ const FoodTracker = () => {
     }
   };
 
-  const analyzePhoto = async () => {
-    if (!photo) return;
+  const analyzeData = async (payload: { photoDataUri?: string; barcode?: string }) => {
     setIsPending(true);
     setAnalysis(null);
     try {
-      const result = await diagnoseFoodAction({ photoDataUri: photo });
-       if (typeof result === 'string') {
-        toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
-      } else {
-        setAnalysis(result);
+      const response = await fetch('/api/diagnose-food', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to analyze.');
       }
+
+      const result = await response.json();
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      if(payload.barcode && result.items.length === 0){
+         toast({ variant: 'destructive', title: 'Barcode Not Found', description: 'This barcode is not in our database yet.' });
+      } else {
+         setAnalysis(result);
+      }
+
     } catch (error) {
       console.error(error);
       toast({
         variant: 'destructive',
         title: 'Analysis Failed',
-        description: 'Could not analyze the photo. Please try again.',
+        description: error instanceof Error ? error.message : 'An unknown error occurred.',
       });
     } finally {
       setIsPending(false);
     }
+  };
+
+
+  const analyzePhoto = () => {
+    if (!photo) return;
+    analyzeData({ photoDataUri: photo });
   };
   
   const scanBarcode = useCallback(async () => {
@@ -144,32 +164,26 @@ const FoodTracker = () => {
         return;
     }
     
+    let isScanning = true;
     const interval = setInterval(async () => {
-        if (!videoRef.current) {
+        if (!videoRef.current || !isScanning) {
              clearInterval(interval);
              return;
         }
         try {
             const barcodes = await barcodeDetector.detect(videoRef.current);
             if (barcodes.length > 0) {
+                isScanning = false;
                 clearInterval(interval);
                 const barcodeValue = barcodes[0].rawValue;
                 toast({ title: 'Barcode Found!', description: `Looking up ${barcodeValue}` });
-                const result = await diagnoseFoodAction({ barcode: barcodeValue });
-                 if (typeof result === 'string') {
-                  toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
-                } else if (result.items.length === 0) {
-                    toast({ variant: 'destructive', title: 'Barcode Not Found', description: 'This barcode is not in our database yet.' });
-                }
-                else {
-                  setAnalysis(result);
-                }
-                setIsPending(false);
+                await analyzeData({ barcode: barcodeValue });
                 setCaptureMode('photo'); // Reset capture mode
             }
         } catch (error) {
              console.error("Barcode detection failed:", error);
              toast({ variant: 'destructive', title: 'Barcode Scan Failed', description: 'Could not scan barcode.' });
+             isScanning = false;
              clearInterval(interval);
              setIsPending(false);
              setCaptureMode('photo');
@@ -178,7 +192,8 @@ const FoodTracker = () => {
 
     // Stop scanning after 10 seconds if no barcode is found
     setTimeout(() => {
-        if(isPending && captureMode === 'barcode'){
+        if(isScanning){
+            isScanning = false;
             clearInterval(interval);
             setIsPending(false);
             setCaptureMode('photo');
@@ -186,7 +201,7 @@ const FoodTracker = () => {
         }
     }, 10000);
 
-  }, [isPending, toast, captureMode]);
+  }, [isPending, toast]);
 
 
   const reset = () => {
@@ -358,7 +373,7 @@ const FoodTracker = () => {
               <Button
                 onClick={photo ? analyzePhoto : () => { /* TODO: Log Data */ }}
                 className="flex-1"
-                disabled={isPending}
+                disabled={isPending || !photo}
               >
                 {isPending ? (
                   <Loader2 className="animate-spin mr-2" />
