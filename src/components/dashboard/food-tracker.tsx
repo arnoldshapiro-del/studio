@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Card,
   CardHeader,
@@ -9,7 +10,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Check, X, Loader2 } from 'lucide-react';
+import { Camera, Upload, Check, X, Loader2, ScanLine } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { diagnoseFood, DiagnoseFoodOutput } from '@/ai/flows/diagnose-food-flow';
@@ -21,6 +22,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { BarcodeDetector as BarcodeDetectorPolyfill } from 'barcode-detector/pure';
+
+type CaptureMode = 'photo' | 'barcode';
 
 const FoodTracker = () => {
   const { toast } = useToast();
@@ -32,12 +36,12 @@ const FoodTracker = () => {
   >(undefined);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [captureMode, setCaptureMode] = useState<CaptureMode>('photo');
 
-  useEffect(() => {
-    const getCameraPermission = async () => {
+  const getCameraPermission = useCallback(async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: true,
+          video: { facingMode: 'environment' },
         });
         setHasCameraPermission(true);
         if (videoRef.current) {
@@ -53,9 +57,11 @@ const FoodTracker = () => {
             'Please enable camera permissions in your browser settings to use this feature.',
         });
       }
-    };
+    },[toast]);
+
+  useEffect(() => {
     getCameraPermission();
-  }, [toast]);
+  }, [getCameraPermission]);
 
   const takePhoto = () => {
     if (videoRef.current && canvasRef.current) {
@@ -101,10 +107,38 @@ const FoodTracker = () => {
       setIsPending(false);
     }
   };
+  
+  const scanBarcode = async () => {
+    if (!videoRef.current) return;
+
+    toast({ title: 'Scanning for barcode...' });
+    setIsPending(true);
+
+    try {
+      const barcodeDetector = new BarcodeDetectorPolyfill();
+      const barcodes = await barcodeDetector.detect(videoRef.current);
+
+      if (barcodes.length > 0) {
+        const barcodeValue = barcodes[0].rawValue;
+        toast({ title: 'Barcode Found!', description: barcodeValue });
+        const result = await diagnoseFood({ barcode: barcodeValue });
+        setAnalysis(result);
+      } else {
+        toast({ variant: 'destructive', title: 'No barcode detected.' });
+      }
+    } catch (error) {
+        console.error("Barcode detection failed:", error);
+        toast({ variant: 'destructive', title: 'Barcode scanning not supported or failed.' });
+    } finally {
+        setIsPending(false);
+    }
+  };
+
 
   const reset = () => {
     setPhoto(null);
     setAnalysis(null);
+    getCameraPermission();
   };
 
   return (
@@ -116,7 +150,7 @@ const FoodTracker = () => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {!photo ? (
+        {!photo && !analysis ? (
           <div className="space-y-4">
             <div className="relative aspect-video w-full bg-secondary rounded-md flex items-center justify-center">
               <video
@@ -127,6 +161,9 @@ const FoodTracker = () => {
                 playsInline
               />
               <div className="absolute inset-0 bg-black/20" />
+              {captureMode === 'barcode' && (
+                  <div className="absolute w-full h-1/3 border-y-4 border-primary/50 animate-pulse" />
+              )}
             </div>
             {hasCameraPermission === false && (
               <Alert variant="destructive">
@@ -141,7 +178,7 @@ const FoodTracker = () => {
               <Button
                 className="flex-1"
                 onClick={takePhoto}
-                disabled={hasCameraPermission === false}
+                disabled={hasCameraPermission === false || isPending}
               >
                 <Camera className="mr-2" />
                 Take Photo
@@ -159,10 +196,21 @@ const FoodTracker = () => {
                 </label>
               </Button>
             </div>
+             <div className="flex gap-4">
+                <Button
+                  className="flex-1"
+                  onClick={scanBarcode}
+                  disabled={hasCameraPermission === false || isPending}
+                  variant="secondary"
+                >
+                  <ScanLine className="mr-2" />
+                  {isPending ? 'Scanning...' : 'Scan Barcode'}
+                </Button>
+             </div>
           </div>
         ) : (
           <div className="space-y-4">
-            <img src={photo} alt="Food" className="rounded-md w-full" />
+            {photo && <img src={photo} alt="Food" className="rounded-md w-full" />}
             {isPending && (
                 <div className="flex items-center justify-center p-8">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -228,7 +276,7 @@ const FoodTracker = () => {
         )}
         <canvas ref={canvasRef} className="hidden" />
       </CardContent>
-      {photo && (
+      {(photo || analysis) && (
         <CardFooter className="flex gap-4">
           <Button variant="outline" onClick={reset} className="flex-1">
             <X className="mr-2" />
@@ -237,14 +285,14 @@ const FoodTracker = () => {
           <Button
             onClick={analyzePhoto}
             className="flex-1"
-            disabled={isPending}
+            disabled={isPending || !photo}
           >
             {isPending ? (
               <Loader2 className="animate-spin mr-2" />
             ) : (
               <Check className="mr-2" />
             )}
-            {analysis ? 'Log Food' : 'Analyze'}
+            {analysis ? 'Log Food' : 'Analyze Photo'}
           </Button>
         </CardFooter>
       )}
