@@ -54,28 +54,15 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
   }, [allData.water.history]);
   
   const moodAndStressChartData = useMemo(() => {
-    const entries = [...allData.mood.history, ...allData.stress.history]
-      .filter(h => isAfter(parseISO(h.date), subDays(new Date(), 30)))
-      .reduce((acc, h) => {
-        const day = format(parseISO(h.date), 'yyyy-MM-dd');
-        if (!acc[day]) {
-          acc[day] = { mood: null, stress: null };
-        }
-        if ('mood' in h) {
-            acc[day].mood = MOOD_TO_VALUE[h.mood];
-        }
-        if ('level' in h) {
-            acc[day].stress = h.level;
-        }
-        return acc;
-      }, {} as Record<string, { mood: number | null, stress: number | null }>);
-
     return last30Days.map(day => {
       const dayStr = format(day, 'yyyy-MM-dd');
+      const moodEntry = allData.mood.history.find(h => format(parseISO(h.date), 'yyyy-MM-dd') === dayStr);
+      const stressEntry = allData.stress.history.find(h => format(parseISO(h.date), 'yyyy-MM-dd') === dayStr);
+      
       return {
         date: format(day, 'MMM d'),
-        mood: entries[dayStr]?.mood || null,
-        stress: entries[dayStr]?.stress || null,
+        mood: moodEntry ? MOOD_TO_VALUE[moodEntry.mood] : null,
+        stress: stressEntry ? stressEntry.level : null,
       };
     });
   }, [allData.mood.history, allData.stress.history, last30Days]);
@@ -138,10 +125,10 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
         <CardHeader>
             <CardTitle className="font-headline text-lg flex items-center gap-2">
                 <Zap className="text-primary" />
-                30-Day Stress & Mood Correlation
+                30-Day Stress & Mood Impact Analysis
             </CardTitle>
             <CardDescription>
-                How your stress levels and mood have trended over the last 30 days.
+                How your stress levels and mood have trended together over the last 30 days.
             </CardDescription>
         </CardHeader>
         <CardContent>
@@ -155,7 +142,7 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
                         tickMargin={10} 
                         interval={3}
                     />
-                    <YAxis yAxisId="stress" orientation="left" domain={[1, 10]} ticks={[1, 5, 10]} allowDecimals={false} label={{ value: 'Stress', angle: -90, position: 'insideLeft' }} />
+                    <YAxis yAxisId="stress" orientation="left" domain={[0, 10]} ticks={[0, 5, 10]} allowDecimals={false} label={{ value: 'Stress', angle: -90, position: 'insideLeft' }} />
                     <YAxis yAxisId="mood" orientation="right" domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tickFormatter={(val) => VALUE_TO_MOOD[val]} allowDecimals={false} label={{ value: 'Mood', angle: 90, position: 'insideRight' }} />
                     <ChartTooltip
                          content={
@@ -163,15 +150,18 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
                                 labelFormatter={(label) => `Data for ${label}`}
                                 formatter={(value, name) => {
                                     if (name === 'mood' && typeof value === 'number') {
-                                        return `${VALUE_TO_MOOD[value]} (${value})`;
+                                        return [`${VALUE_TO_MOOD[value]}`, 'Mood'];
                                     }
-                                    return value;
+                                     if (name === 'stress' && typeof value === 'number') {
+                                        return [value, 'Stress Level'];
+                                    }
+                                    return [value, name];
                                 }}
                             />
                         }
                     />
                     <Bar yAxisId="stress" dataKey="stress" fill="var(--color-chart-2)" radius={4} name="Stress Level" barSize={10} />
-                    <Line yAxisId="mood" type="monotone" dataKey="mood" stroke="var(--color-chart-1)" strokeWidth={2} name="Mood Rating" dot={false} connectNulls />
+                    <Line yAxisId="mood" type="monotone" dataKey="mood" stroke="var(--color-chart-1)" strokeWidth={2} name="Mood" dot={false} connectNulls />
                 </ComposedChart>
             </ChartContainer>
         </CardContent>
