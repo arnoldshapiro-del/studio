@@ -1,13 +1,8 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import type { MedicationState, WaterState, InjectionState, WorkoutState } from '@/lib/types';
-import {
-  initialMedicationState,
-  initialWaterState,
-  initialInjectionState,
-  initialWorkoutState,
-} from '@/lib/data';
+import { useEffect, useMemo, useState } from 'react';
+import type { MedicationState, WaterState, InjectionState, WorkoutState, AllData } from '@/lib/types';
+import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState } from '@/lib/data';
 
 import Header from '@/components/header';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -17,8 +12,22 @@ import InjectionTracker from '@/components/dashboard/injection-tracker';
 import WorkoutTracker from '@/components/dashboard/workout-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
+import { useAuth, useDoc, useFirestore, useUser } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+  const user = useUser();
+  const firestore = useFirestore();
+
+  const userDocRef = useMemo(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [user, firestore]);
+
+  const { data: userData, loading: userDataLoading } = useDoc<AllData>(userDocRef);
+
   const [medication, setMedication] = useState<MedicationState>(initialMedicationState);
   const [water, setWater] = useState<WaterState>(initialWaterState);
   const [injection, setInjection] = useState<InjectionState>(initialInjectionState);
@@ -30,6 +39,35 @@ export default function Home() {
     injection,
     workout
   }), [medication, water, injection, workout]);
+
+  useEffect(() => {
+    if (!userDataLoading && userData) {
+      setMedication(userData.medication || initialMedicationState);
+      setWater(userData.water || initialWaterState);
+      setInjection(userData.injection || initialInjectionState);
+      setWorkout(userData.workout || initialWorkoutState);
+    }
+  }, [userData, userDataLoading]);
+
+  useEffect(() => {
+    if (userDocRef) {
+      setDoc(userDocRef, allData, { merge: true });
+    }
+  }, [allData, userDocRef]);
+
+  useEffect(() => {
+    if (!user && !userDataLoading) {
+      router.push('/login');
+    }
+  }, [user, userDataLoading, router]);
+
+  if (userDataLoading || !user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
