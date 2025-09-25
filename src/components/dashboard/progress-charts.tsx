@@ -5,9 +5,9 @@ import { useMemo } from 'react';
 import type { AllData } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Pie, PieChart, Cell, Line, LineChart } from 'recharts';
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid, Pie, PieChart, Cell, Line, LineChart, ComposedChart } from 'recharts';
 import { subDays, format, isAfter, parseISO } from 'date-fns';
-import { Footprints, Droplet, HeartPulse } from 'lucide-react';
+import { Footprints, Droplet, HeartPulse, Zap } from 'lucide-react';
 
 interface ProgressChartsProps {
   allData: AllData;
@@ -15,6 +15,8 @@ interface ProgressChartsProps {
 
 const COLORS = ['var(--color-chart-1)', 'var(--color-chart-2)', 'var(--color-chart-3)', 'var(--color-chart-4)', 'var(--color-chart-5)'];
 const MOOD_TO_VALUE: Record<string, number> = { 'awful': 1, 'bad': 2, 'neutral': 3, 'good': 4, 'great': 5 };
+const VALUE_TO_MOOD: Record<number, string> = { 1: 'Awful', 2: 'Bad', 3: 'Neutral', 4: 'Good', 5: 'Great' };
+
 
 const ProgressCharts = ({ allData }: ProgressChartsProps) => {
 
@@ -51,23 +53,32 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
     return Object.entries(data).map(([name, value]) => ({ name, value }));
   }, [allData.water.history]);
   
-  const moodChartData = useMemo(() => {
-    const moodEntries = allData.mood.history
+  const moodAndStressChartData = useMemo(() => {
+    const entries = [...allData.mood.history, ...allData.stress.history]
       .filter(h => isAfter(parseISO(h.date), subDays(new Date(), 30)))
       .reduce((acc, h) => {
         const day = format(parseISO(h.date), 'yyyy-MM-dd');
-        acc[day] = MOOD_TO_VALUE[h.mood];
+        if (!acc[day]) {
+          acc[day] = { mood: null, stress: null };
+        }
+        if ('mood' in h) {
+            acc[day].mood = MOOD_TO_VALUE[h.mood];
+        }
+        if ('level' in h) {
+            acc[day].stress = h.level;
+        }
         return acc;
-      }, {} as Record<string, number>);
+      }, {} as Record<string, { mood: number | null, stress: number | null }>);
 
     return last30Days.map(day => {
       const dayStr = format(day, 'yyyy-MM-dd');
       return {
         date: format(day, 'MMM d'),
-        mood: moodEntries[dayStr] || null,
+        mood: entries[dayStr]?.mood || null,
+        stress: entries[dayStr]?.stress || null,
       };
     });
-  }, [allData.mood.history, last30Days]);
+  }, [allData.mood.history, allData.stress.history, last30Days]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
@@ -126,16 +137,16 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
       <Card className="lg:col-span-2">
         <CardHeader>
             <CardTitle className="font-headline text-lg flex items-center gap-2">
-                <HeartPulse className="text-primary" />
-                30-Day Mood Trend
+                <Zap className="text-primary" />
+                30-Day Stress & Mood Correlation
             </CardTitle>
             <CardDescription>
-                Your mood ratings over the last 30 days. (1: Awful, 5: Great)
+                How your stress levels and mood have trended over the last 30 days.
             </CardDescription>
         </CardHeader>
         <CardContent>
             <ChartContainer config={{}} className="h-64">
-                <LineChart data={moodChartData}>
+                <ComposedChart data={moodAndStressChartData}>
                     <CartesianGrid vertical={false} />
                     <XAxis 
                         dataKey="date" 
@@ -144,23 +155,24 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
                         tickMargin={10} 
                         interval={3}
                     />
-                    <YAxis 
-                        domain={[1, 5]} 
-                        ticks={[1, 2, 3, 4, 5]}
-                        allowDecimals={false}
+                    <YAxis yAxisId="stress" orientation="left" domain={[1, 10]} ticks={[1, 5, 10]} allowDecimals={false} />
+                    <YAxis yAxisId="mood" orientation="right" domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} allowDecimals={false} />
+                    <ChartTooltip
+                         content={
+                            <ChartTooltipContent
+                                labelFormatter={(label) => `Data for ${label}`}
+                                formatter={(value, name) => {
+                                    if (name === 'mood' && typeof value === 'number') {
+                                        return `${VALUE_TO_MOOD[value]} (${value})`;
+                                    }
+                                    return value;
+                                }}
+                            />
+                        }
                     />
-                    <ChartTooltip 
-                        content={<ChartTooltipContent
-                            formatter={(value) => {
-                                if (typeof value !== 'number') return value;
-                                const moodLabel = Object.keys(MOOD_TO_VALUE).find(key => MOOD_TO_VALUE[key] === value);
-                                return moodLabel ? moodLabel.charAt(0).toUpperCase() + moodLabel.slice(1) : value;
-                            } }
-                            labelFormatter={(label) => `Mood on ${label}`}
-                        />}
-                    />
-                    <Line type="monotone" dataKey="mood" stroke="var(--color-chart-1)" strokeWidth={2} dot={false} connectNulls />
-                </LineChart>
+                    <Bar yAxisId="stress" dataKey="stress" fill="var(--color-chart-2)" radius={4} name="Stress Level" barSize={10} />
+                    <Line yAxisId="mood" type="monotone" dataKey="mood" stroke="var(--color-chart-1)" strokeWidth={2} name="Mood Rating" dot={false} connectNulls />
+                </ComposedChart>
             </ChartContainer>
         </CardContent>
       </Card>
@@ -170,5 +182,3 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
 };
 
 export default ProgressCharts;
-
-    

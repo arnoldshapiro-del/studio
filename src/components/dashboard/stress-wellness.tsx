@@ -2,18 +2,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { StressState } from '@/lib/types';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import type { StressState, MeditationState } from '@/lib/types';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
-import { BrainCircuit, Zap, Wind } from 'lucide-react';
+import { BrainCircuit, Zap, Wind, Timer } from 'lucide-react';
 import { isToday, parseISO } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
-import { initialStressState } from '@/lib/data';
+import { initialStressState, initialMeditationState } from '@/lib/data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 const BoxBreathingAnimation = () => {
   const [instruction, setInstruction] = useState('Get Ready...');
@@ -77,6 +78,101 @@ const BoxBreathingAnimation = () => {
     </div>
   );
 };
+
+const MeditationTimer = () => {
+    const { toast } = useToast();
+    const { user } = useUser();
+    const firestore = useFirestore();
+    const [duration, setDuration] = useState(5); // in minutes
+    const [timeLeft, setTimeLeft] = useState(0);
+    const [isActive, setIsActive] = useState(false);
+
+    const userDocRef = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return doc(firestore, 'users', user.uid, 'data', 'latest');
+    }, [user, firestore]);
+    
+    const { data: meditationData } = useDoc<{ meditation: MeditationState }>(userDocRef);
+    const meditation = meditationData?.meditation || initialMeditationState;
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null;
+        if (isActive && timeLeft > 0) {
+            interval = setInterval(() => {
+                setTimeLeft(prev => prev - 1);
+            }, 1000);
+        } else if (isActive && timeLeft === 0) {
+            setIsActive(false);
+            if (!userDocRef) return;
+            const today = new Date().toISOString();
+            const newHistory = [...meditation.history, { date: today, duration }];
+            setDocumentNonBlocking(userDocRef, { meditation: { ...meditation, history: newHistory } }, { merge: true });
+            toast({ title: 'Meditation Complete!', description: `You completed a ${duration}-minute session.` });
+            new Audio('/assets/notification.mp3').play().catch(e => console.error("Error playing sound", e));
+        }
+
+        return () => {
+            if(interval) clearInterval(interval);
+        };
+
+    }, [isActive, timeLeft, duration, meditation, userDocRef, toast]);
+    
+    const handleStart = () => {
+        setTimeLeft(duration * 60);
+        setIsActive(true);
+    };
+
+    const handleStop = () => {
+        setIsActive(false);
+        setTimeLeft(0);
+    };
+    
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="font-headline text-lg flex items-center gap-2">
+                    <Timer className="text-primary" />
+                    Meditation Timer
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center text-center h-full space-y-4">
+                 {isActive ? (
+                    <div className="text-6xl font-bold font-mono text-primary">{formatTime(timeLeft)}</div>
+                 ) : (
+                    <>
+                        <Label>Set Duration (minutes)</Label>
+                         <Select
+                            value={String(duration)}
+                            onValueChange={(val) => setDuration(Number(val))}
+                        >
+                            <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Duration" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {[1, 2, 5, 10, 15, 20, 30].map(d => (
+                                    <SelectItem key={d} value={String(d)}>{d} minutes</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </>
+                 )}
+            </CardContent>
+            <CardFooter>
+                 {isActive ? (
+                    <Button onClick={handleStop} variant="destructive" className="w-full">Stop Timer</Button>
+                 ) : (
+                    <Button onClick={handleStart} className="w-full">Start Timer</Button>
+                 )}
+            </CardFooter>
+        </Card>
+    )
+}
 
 
 const StressWellness = () => {
@@ -159,24 +255,25 @@ const StressWellness = () => {
                 <Button className="w-full" onClick={handleStressLog}>Log Stress Level</Button>
             </CardContent>
         </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center gap-2">
-                    <BrainCircuit className="text-primary" />
-                    Quick Relief
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center text-center h-full">
-                <p className="text-muted-foreground mb-4">Feeling overwhelmed? Try a quick guided breathing exercise to calm your mind.</p>
-                <Button onClick={() => setShowBreathing(true)}>
-                    <Wind className="mr-2" /> Start Box Breathing
-                </Button>
-            </CardContent>
-        </Card>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline text-lg flex items-center gap-2">
+                        <BrainCircuit className="text-primary" />
+                        Quick Relief
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center justify-center text-center">
+                    <p className="text-muted-foreground mb-4">Feeling overwhelmed? Try a quick guided breathing exercise to calm your mind.</p>
+                    <Button onClick={() => setShowBreathing(true)}>
+                        <Wind className="mr-2" /> Start Box Breathing
+                    </Button>
+                </CardContent>
+            </Card>
+            <MeditationTimer />
+        </div>
         </div>
     );
 };
 
 export default StressWellness;
-
-    

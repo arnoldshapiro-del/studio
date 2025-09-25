@@ -29,7 +29,8 @@
         "injection": { "$ref": "#/backend/entities/InjectionState" },
         "workout": { "$ref": "#/backend/entities/WorkoutState" },
         "mood": { "$ref": "#/backend/entities/MoodState" },
-        "stress": { "$ref": "#/backend/entities/StressState" }
+        "stress": { "$ref": "#/backend/entities/StressState" },
+        "meditation": { "$ref": "#/backend/entities/MeditationState" }
       }
     },
     "DatedEntry": {
@@ -181,6 +182,28 @@
         }
       },
       "required": ["level"]
+    },
+    "MeditationState": {
+      "title": "MeditationState",
+      "type": "object",
+      "properties": {
+        "history": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/MeditationEntry" }
+        }
+      }
+    },
+    "MeditationEntry": {
+      "title": "MeditationEntry",
+      "type": "object",
+      "allOf": [{ "$ref": "#/backend/entities/DatedEntry" }],
+      "properties": {
+        "duration": {
+          "type": "number",
+          "description": "Duration of the meditation session in minutes."
+        }
+      },
+      "required": ["duration"]
     }
   },
   "auth": {

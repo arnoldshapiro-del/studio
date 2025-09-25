@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { AllData, WorkoutEntry, StressEntry } from '@/lib/types';
-import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState, initialStressState } from '@/lib/data';
+import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState, initialStressState, initialMeditationState } from '@/lib/data';
 
 import Header from '@/components/header';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
@@ -52,6 +52,7 @@ export default function Home() {
         workout: userData.workout || initialWorkoutState,
         mood: userData.mood || initialMoodState,
         stress: userData.stress || initialStressState,
+        meditation: userData.meditation || initialMeditationState,
       };
     }
     return {
@@ -61,6 +62,7 @@ export default function Home() {
       workout: initialWorkoutState,
       mood: initialMoodState,
       stress: initialStressState,
+      meditation: initialMeditationState,
     };
   }, [userData]);
 

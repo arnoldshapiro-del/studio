@@ -1,4 +1,5 @@
 
+
 export type TimeOfDay = {
   taken: boolean;
   time: string;
@@ -68,6 +69,15 @@ export type StressState = {
   history: StressEntry[];
 };
 
+export type MeditationEntry = DatedEntry & {
+    duration: number; // in minutes
+};
+
+export type MeditationState = {
+    history: MeditationEntry[];
+};
+
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
@@ -75,4 +85,5 @@ export type AllData = {
   workout: WorkoutState;
   mood: MoodState;
   stress: StressState;
+  meditation: MeditationState;
 };
