@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { WorkoutState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -29,11 +29,11 @@ const Settings = () => {
   
   const [workout, setWorkout] = useState<WorkoutState>(initialWorkoutState);
 
-  useState(() => {
+  useEffect(() => {
       if (userData?.workout) {
           setWorkout(userData.workout);
       }
-  });
+  }, [userData]);
 
   const handleGoalChange = (type: 'treadmill' | 'resistance', value: number) => {
     setWorkout(prev => ({

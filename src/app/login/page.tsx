@@ -45,7 +45,14 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         router.push('/');
       } catch (e: any) {
-        setError(e.message);
+        let errorMessage = 'An unknown error occurred.';
+        // Firebase error codes can be more specific
+        if (e.code === 'auth/user-not-found' || e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential') {
+            errorMessage = 'Invalid email or password. Please try again.';
+        } else if (e.message) {
+            errorMessage = e.message;
+        }
+        setError(errorMessage);
       }
     }
   };
@@ -99,6 +106,7 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleEmailSignIn()}
                 />
               </div>
               <div className="space-y-2">
@@ -109,6 +117,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                   onKeyDown={(e) => e.key === 'Enter' && handleEmailSignIn()}
                 />
               </div>
                {error && <p className="text-sm text-destructive">{error}</p>}

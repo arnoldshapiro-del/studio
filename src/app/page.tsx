@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import type { AllData, WorkoutEntry, StressEntry } from '@/lib/types';
+import type { AllData, WorkoutEntry } from '@/lib/types';
 import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState, initialStressState, initialMeditationState } from '@/lib/data';
 
 import Header from '@/components/header';
@@ -15,7 +15,6 @@ import MoodTracker from '@/components/dashboard/mood-tracker';
 import StreaksTracker from '@/components/dashboard/streaks-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
-import ProgressCharts from '@/components/dashboard/progress-charts';
 import FoodTracker from '@/components/dashboard/food-tracker';
 import StressWellness from '@/components/dashboard/stress-wellness';
 import Settings from '@/components/settings';
@@ -26,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
+import HealthReport from '@/components/health-report';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
 import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit, Users } from 'lucide-react';
 
@@ -125,9 +125,9 @@ export default function Home() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('progress')} isActive={activeView === 'progress'} tooltip="Progress">
+                    <SidebarMenuButton onClick={() => setActiveView('reports')} isActive={activeView === 'reports'} tooltip="Health Reports">
                         <BarChart />
-                        <span>Progress</span>
+                        <span>Reports</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
@@ -152,7 +152,7 @@ export default function Home() {
         </Sidebar>
         <SidebarInset>
         <main className="flex-1 p-4 sm:p-6 md:p-8">
-          {activeView !== 'help' && activeView !== 'settings' && <DashboardHeader />}
+          {activeView !== 'help' && activeView !== 'settings' && activeView !== 'reports' && <DashboardHeader />}
           <div className='mt-8'>
             {activeView === 'dashboard' && (
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -200,8 +200,8 @@ export default function Home() {
               <StressWellness />
             )}
 
-            {activeView === 'progress' && (
-                <ProgressCharts allData={allData} />
+            {activeView === 'reports' && (
+                <HealthReport allData={allData} />
             )}
 
             {activeView === 'settings' && (
