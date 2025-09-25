@@ -17,6 +17,7 @@ const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps
   const handleToggle = (period: 'morning' | 'evening') => {
     setMedication(prev => {
       const today = new Date().toISOString();
+      const time = prev[period].time;
       const isTaken = prev.history.some(h => h.period === period && isToday(parseISO(h.date)));
 
       if (isTaken) {
@@ -29,7 +30,7 @@ const MedicationTracker = ({ medication, setMedication }: MedicationTrackerProps
         // Add the entry for today
         return {
           ...prev,
-          history: [...prev.history, { period, date: today }],
+          history: [...prev.history, { period, date: today, time }],
         };
       }
     });

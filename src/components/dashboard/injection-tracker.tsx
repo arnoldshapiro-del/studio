@@ -1,16 +1,17 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
 import type { InjectionState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Syringe, Settings, AlertTriangle, CalendarCheck2 } from 'lucide-react';
+import { Syringe, Settings, AlertTriangle, CalendarCheck2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { addDays, format, differenceInDays, isToday, isPast, parseISO } from 'date-fns';
+import { addDays, format, differenceInDays, isToday, parseISO, set } from 'date-fns';
 
 interface InjectionTrackerProps {
   injection: InjectionState;
@@ -20,14 +21,24 @@ interface InjectionTrackerProps {
 const InjectionTracker = ({ injection, setInjection }: InjectionTrackerProps) => {
   const { toast } = useToast();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [logTime, setLogTime] = useState(format(new Date(), 'HH:mm'));
   const [tempSettings, setTempSettings] = useState({
     startDate: format(parseISO(injection.startDate), 'yyyy-MM-dd'),
     frequency: injection.frequency,
   });
 
   const { nextDueDate, status, daysDiff, isTakenToday } = useMemo(() => {
+    if (!injection.history) {
+      // Handle case where history is undefined
+      const nextDate = addDays(parseISO(injection.startDate), injection.frequency);
+      const diff = differenceInDays(nextDate, new Date());
+      let currentStatus: 'due' | 'overdue' | 'upcoming' | 'complete' = 'upcoming';
+       if (diff < 0) currentStatus = 'overdue';
+       if (diff === 0) currentStatus = 'due';
+      return { nextDueDate: nextDate, status: currentStatus, daysDiff: Math.abs(diff), isTakenToday: false };
+    }
     const lastInjectionDate = injection.history.length > 0
-      ? parseISO(injection.history[injection.history.length - 1])
+      ? parseISO(injection.history[injection.history.length - 1].date)
       : parseISO(injection.startDate);
 
     const nextDate = addDays(lastInjectionDate, injection.frequency);
@@ -40,18 +51,21 @@ const InjectionTracker = ({ injection, setInjection }: InjectionTrackerProps) =>
     if (diff < 0) currentStatus = 'overdue';
     if (diff === 0) currentStatus = 'due';
 
-    const takenToday = injection.history.some(h => isToday(parseISO(h)));
+    const takenToday = injection.history.some(h => isToday(parseISO(h.date)));
     if (takenToday) currentStatus = 'complete';
 
     return { nextDueDate: nextDate, status: currentStatus, daysDiff: Math.abs(diff), isTakenToday: takenToday };
   }, [injection]);
 
   const handleLogInjection = () => {
+    const [hours, minutes] = logTime.split(':').map(Number);
+    const logDate = set(new Date(), { hours, minutes });
+
     setInjection(prev => ({
       ...prev,
-      history: [...prev.history, new Date().toISOString()],
+      history: [...(prev.history || []), { id: crypto.randomUUID(), date: logDate.toISOString() }],
     }));
-    toast({ title: "Injection Logged!", description: "Great job staying on track." });
+    toast({ title: "Injection Logged!", description: `Logged at ${format(logDate, 'p')}. Great job staying on track.` });
   };
   
   const handleSaveSettings = () => {
@@ -154,13 +168,26 @@ const InjectionTracker = ({ injection, setInjection }: InjectionTrackerProps) =>
         <p className="font-bold text-2xl mt-4 font-headline">{title}</p>
         <p className="text-muted-foreground mt-1">{description}</p>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col gap-3">
+        {!isTakenToday && (status === 'due' || status === 'overdue') && (
+          <div className="flex items-center gap-2 w-full">
+            <Label htmlFor="injection-time" className="sr-only">Injection Time</Label>
+            <Clock className="w-4 h-4 text-muted-foreground" />
+            <Input
+              id="injection-time"
+              type="time"
+              value={logTime}
+              onChange={(e) => setLogTime(e.target.value)}
+              className="flex-1"
+            />
+          </div>
+        )}
         <Button
           className="w-full"
           onClick={handleLogInjection}
           disabled={isTakenToday}
         >
-          {isTakenToday ? 'Completed' : 'Log Injection'}
+          {isTakenToday ? 'Completed Today' : 'Log Injection'}
         </Button>
       </CardFooter>
     </Card>

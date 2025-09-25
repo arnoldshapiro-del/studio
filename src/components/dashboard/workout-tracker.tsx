@@ -3,24 +3,100 @@
 
 import type { WorkoutState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Footprints, Dumbbell } from 'lucide-react';
+import { Footprints, Dumbbell, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { isThisWeek, parseISO } from 'date-fns';
+import { isThisWeek, parseISO, format } from 'date-fns';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { useState } from 'react';
 
 interface WorkoutTrackerProps {
   workout: WorkoutState;
   setWorkout: React.Dispatch<React.SetStateAction<WorkoutState>>;
 }
 
+const LogWorkoutDialog = ({ type, onLog, goal, sessionsThisWeek }: { type: 'treadmill' | 'resistance', onLog: (startTime: string, endTime: string) => void, goal: number, sessionsThisWeek: number }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [startTime, setStartTime] = useState('08:00');
+  const [endTime, setEndTime] = useState('08:20');
+
+  const handleLog = () => {
+    onLog(startTime, endTime);
+    setIsOpen(false);
+  };
+
+  const defaultDurationText = type === 'treadmill' ? '20min' : '30-60min';
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button
+          size="sm"
+          variant="outline"
+          className="mt-3 w-full"
+          disabled={sessionsThisWeek >= goal}
+        >
+          Log {defaultDurationText} {type === 'treadmill' ? 'Treadmill' : 'Resistance'} Session
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Log {type === 'treadmill' ? 'Treadmill' : 'Resistance'} Workout</DialogTitle>
+          <DialogDescription>
+            Specify the start and end time for your workout session.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="start-time" className="text-right">
+              Start Time
+            </Label>
+            <Input
+              id="start-time"
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="end-time" className="text-right">
+              End Time
+            </Label>
+            <Input
+              id="end-time"
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button onClick={handleLog}>Log Workout</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+
 const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
 
-  const handleLogWorkout = (type: 'treadmill' | 'resistance') => {
+  const handleLogWorkout = (type: 'treadmill' | 'resistance', startTime: string, endTime: string) => {
     setWorkout(prev => {
       const today = new Date().toISOString();
       return {
         ...prev,
-        history: [...prev.history, { type, date: today }],
+        history: [...prev.history, { 
+          id: crypto.randomUUID(), 
+          type, 
+          date: today,
+          startTime,
+          endTime,
+        }],
       };
     });
   };
@@ -56,15 +132,12 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
             </p>
           </div>
           <Progress value={treadmillProgress} className="h-2" />
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-3 w-full"
-            onClick={() => handleLogWorkout('treadmill')}
-            disabled={treadmillSessionsThisWeek >= workout.treadmill.goal}
-          >
-            Log 20min Treadmill Session
-          </Button>
+          <LogWorkoutDialog
+            type="treadmill"
+            onLog={(start, end) => handleLogWorkout('treadmill', start, end)}
+            goal={workout.treadmill.goal}
+            sessionsThisWeek={treadmillSessionsThisWeek}
+          />
         </div>
 
         {/* Resistance Training Section */}
@@ -79,15 +152,12 @@ const WorkoutTracker = ({ workout, setWorkout }: WorkoutTrackerProps) => {
             </p>
           </div>
           <Progress value={resistanceProgress} className="h-2" />
-          <Button
-            size="sm"
-            variant="outline"
-            className="mt-3 w-full"
-            onClick={() => handleLogWorkout('resistance')}
-            disabled={resistanceSessionsThisWeek >= workout.resistance.goal}
-          >
-            Log 30-60min Resistance Session
-          </Button>
+           <LogWorkoutDialog
+            type="resistance"
+            onLog={(start, end) => handleLogWorkout('resistance', start, end)}
+            goal={workout.resistance.goal}
+            sessionsThisWeek={resistanceSessionsThisWeek}
+          />
         </div>
       </CardContent>
     </Card>

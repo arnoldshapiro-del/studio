@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from 'react';
-import type { AllData } from '@/lib/types';
+import type { AllData, WorkoutEntry } from '@/lib/types';
 import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState } from '@/lib/data';
 
 import Header from '@/components/header';
@@ -44,6 +44,20 @@ export default function Home() {
     injection,
     workout
   }), [medication, water, injection, workout]);
+
+  const handleUpdateWorkout = (updatedEntry: WorkoutEntry) => {
+    setWorkout(prev => ({
+      ...prev,
+      history: prev.history.map(entry => entry.id === updatedEntry.id ? updatedEntry : entry)
+    }));
+  };
+
+  const handleDeleteWorkout = (entryId: string) => {
+    setWorkout(prev => ({
+      ...prev,
+      history: prev.history.filter(entry => entry.id !== entryId)
+    }));
+  };
 
   useEffect(() => {
     if (!userDataLoading && userData) {
@@ -87,7 +101,11 @@ export default function Home() {
             <TabsTrigger value="trackers">Daily Trackers</TabsTrigger>
           </TabsList>
           <TabsContent value="dashboard">
-            <Calendar allData={allData} />
+            <Calendar 
+              allData={allData} 
+              onUpdateWorkout={handleUpdateWorkout}
+              onDeleteWorkout={handleDeleteWorkout}
+            />
           </TabsContent>
           <TabsContent value="trackers">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">

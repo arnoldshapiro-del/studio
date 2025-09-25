@@ -8,20 +8,37 @@ export type DatedEntry = {
   date: string; // ISO string
 };
 
+export type MedicationEntry = DatedEntry & { 
+  period: 'morning' | 'evening';
+  time: string; 
+};
+
 export type MedicationState = {
   morning: { time: string };
   evening: { time: string };
-  history: (DatedEntry & { period: 'morning' | 'evening' })[];
+  history: MedicationEntry[];
 };
 
 export type WaterState = {
   history: (DatedEntry & { period: 'morning' | 'afternoon' | 'evening' })[];
 };
 
+export type InjectionEntry = {
+  id: string;
+  date: string; // ISO string with time
+};
+
 export type InjectionState = {
   startDate: string; // ISO string
   frequency: number; // in days
-  history: string[]; // Array of ISO strings for dates
+  history: InjectionEntry[];
+};
+
+export type WorkoutEntry = DatedEntry & {
+  id: string;
+  type: 'treadmill' | 'resistance';
+  startTime: string;
+  endTime: string;
 };
 
 export type WorkoutState = {
@@ -31,7 +48,7 @@ export type WorkoutState = {
   resistance: {
     goal: number;
   };
-  history: (DatedEntry & { type: 'treadmill' | 'resistance' })[];
+  history: WorkoutEntry[];
 };
 
 export type AllData = {
