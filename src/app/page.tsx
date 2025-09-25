@@ -205,9 +205,7 @@ export default function Home() {
             )}
 
             {activeView === 'settings' && (
-                <Settings 
-                  allData={allData} 
-                />
+                <Settings />
             )}
 
             {activeView === 'help' && (

@@ -68,7 +68,7 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
   }, [allData.mood.history, allData.stress.history, last30Days]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
           <CardTitle className="font-headline text-lg flex items-center gap-2">
@@ -132,7 +132,7 @@ const ProgressCharts = ({ allData }: ProgressChartsProps) => {
             </CardDescription>
         </CardHeader>
         <CardContent>
-            <ChartContainer config={{}} className="h-64">
+            <ChartContainer config={{}} className="h-80">
                 <ComposedChart data={moodAndStressChartData}>
                     <CartesianGrid vertical={false} />
                     <XAxis 
