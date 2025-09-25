@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -10,7 +9,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, Check, X, Loader2, ScanLine } from 'lucide-react';
+import { Camera, Upload, Check, X, Loader2, ScanLine, Utensils } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { diagnoseFoodAction } from '@/app/actions';
@@ -76,6 +75,7 @@ const FoodTracker = () => {
         const dataUrl = canvas.toDataURL('image/jpeg');
         setPhoto(dataUrl);
         setAnalysis(null);
+        setCaptureMode('photo');
       }
     }
   };
@@ -87,6 +87,7 @@ const FoodTracker = () => {
       reader.onload = (e) => {
         setPhoto(e.target?.result as string);
         setAnalysis(null);
+        setCaptureMode('photo');
       };
       reader.readAsDataURL(file);
     }
@@ -339,5 +340,3 @@ const FoodTracker = () => {
 };
 
 export default FoodTracker;
-
-    
