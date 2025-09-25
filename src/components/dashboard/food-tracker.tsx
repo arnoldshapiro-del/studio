@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
@@ -61,6 +62,14 @@ const FoodTracker = () => {
 
   useEffect(() => {
     getCameraPermission();
+
+    return () => {
+      // Stop camera stream when component unmounts
+      if (videoRef.current && videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => track.stop());
+      }
+    }
   }, [getCameraPermission]);
 
   const takePhoto = () => {
@@ -116,7 +125,7 @@ const FoodTracker = () => {
     }
   };
   
-  const scanBarcode = async () => {
+  const scanBarcode = useCallback(async () => {
     if (!videoRef.current || isPending) return;
 
     toast({ title: 'Scanning for barcode...' });
@@ -125,33 +134,59 @@ const FoodTracker = () => {
     setPhoto(null);
     setAnalysis(null);
 
+    let barcodeDetector: BarcodeDetectorPolyfill;
     try {
-      const barcodeDetector = new BarcodeDetectorPolyfill();
-      const barcodes = await barcodeDetector.detect(videoRef.current);
-
-      if (barcodes.length > 0) {
-        const barcodeValue = barcodes[0].rawValue;
-        toast({ title: 'Barcode Found!', description: `Looking up ${barcodeValue}` });
-        const result = await diagnoseFoodAction({ barcode: barcodeValue });
-         if (typeof result === 'string') {
-          toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
-        } else if (result.items.length === 0) {
-            toast({ variant: 'destructive', title: 'Barcode Not Found', description: 'This barcode is not in our database yet.' });
-        }
-        else {
-          setAnalysis(result);
-        }
-      } else {
-        toast({ variant: 'destructive', title: 'No barcode detected.', description: 'Please try again.' });
-      }
-    } catch (error: any) {
-        console.error("Barcode detection failed:", error);
-        toast({ variant: 'destructive', title: 'Barcode Scan Failed', description: error.message || 'Could not scan barcode.' });
-    } finally {
+        barcodeDetector = new BarcodeDetectorPolyfill();
+    } catch (error) {
+        console.error("Failed to create BarcodeDetector:", error);
+        toast({ variant: 'destructive', title: 'Scanner Not Supported', description: 'Your browser does not support barcode scanning.' });
         setIsPending(false);
-        setCaptureMode('photo');
+        return;
     }
-  };
+    
+    const interval = setInterval(async () => {
+        if (!videoRef.current) {
+             clearInterval(interval);
+             return;
+        }
+        try {
+            const barcodes = await barcodeDetector.detect(videoRef.current);
+            if (barcodes.length > 0) {
+                clearInterval(interval);
+                const barcodeValue = barcodes[0].rawValue;
+                toast({ title: 'Barcode Found!', description: `Looking up ${barcodeValue}` });
+                const result = await diagnoseFoodAction({ barcode: barcodeValue });
+                 if (typeof result === 'string') {
+                  toast({ variant: 'destructive', title: 'Analysis Failed', description: result });
+                } else if (result.items.length === 0) {
+                    toast({ variant: 'destructive', title: 'Barcode Not Found', description: 'This barcode is not in our database yet.' });
+                }
+                else {
+                  setAnalysis(result);
+                }
+                setIsPending(false);
+                setCaptureMode('photo'); // Reset capture mode
+            }
+        } catch (error) {
+             console.error("Barcode detection failed:", error);
+             toast({ variant: 'destructive', title: 'Barcode Scan Failed', description: 'Could not scan barcode.' });
+             clearInterval(interval);
+             setIsPending(false);
+             setCaptureMode('photo');
+        }
+    }, 1000); // Check every second
+
+    // Stop scanning after 10 seconds if no barcode is found
+    setTimeout(() => {
+        if(isPending && captureMode === 'barcode'){
+            clearInterval(interval);
+            setIsPending(false);
+            setCaptureMode('photo');
+            toast({ variant: 'destructive', title: 'Scan Timed Out', description: 'No barcode was detected.' });
+        }
+    }, 10000);
+
+  }, [isPending, toast, captureMode]);
 
 
   const reset = () => {

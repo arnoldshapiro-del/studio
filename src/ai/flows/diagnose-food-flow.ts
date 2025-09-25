@@ -101,6 +101,8 @@ const prompt = ai.definePrompt({
   
   Return the analysis as a structured object containing a list of all identified items and a summary of the total nutritional values for the meal.
 
+  If you use the lookupBarcode tool and it returns a result, you must use that result to populate the 'items' and 'total' fields of your response. Do not hallucinate data if the barcode lookup is successful. The 'total' should just be the values from the single item.
+
   {{#if barcode}}Barcode: {{{barcode}}}{{/if}}
   {{#if photoDataUri}}Photo: {{media url=photoDataUri}}{{/if}}
   `,
@@ -113,7 +115,27 @@ const diagnoseFoodFlow = ai.defineFlow(
     outputSchema: DiagnoseFoodOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    return output!;
+    const response = await prompt(input);
+    const output = response.output();
+    
+    if (!output) {
+      throw new Error('AI failed to return valid analysis.');
+    }
+
+    if(input.barcode && output.items.length === 0) {
+        // Handle the case where the LLM might not call the tool correctly or returns empty.
+        const toolResult = await lookupBarcode({barcode: input.barcode});
+        if(toolResult) {
+            output.items = [toolResult];
+            output.total = {
+                calories: toolResult.calories,
+                protein: toolResult.protein,
+                carbs: toolResult.carbs,
+                fat: toolResult.fat
+            };
+        }
+    }
+    
+    return output;
   }
 );

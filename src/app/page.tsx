@@ -121,7 +121,7 @@ export default function Home() {
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setActiveView('stress')} isActive={activeView === 'stress'} tooltip="Stress & Wellness">
                         <BrainCircuit />
-                        <span>Stress</span>
+                        <span>Stress & Wellness</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
