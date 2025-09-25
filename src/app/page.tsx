@@ -12,21 +12,23 @@ import InjectionTracker from '@/components/dashboard/injection-tracker';
 import WorkoutTracker from '@/components/dashboard/workout-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
-import { useAuth, useDoc, useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 export default function Home() {
   const router = useRouter();
-  const user = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
-  const userDocRef = useMemo(() => {
+  const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
     return doc(firestore, 'users', user.uid);
   }, [user, firestore]);
 
-  const { data: userData, loading: userDataLoading } = useDoc<AllData>(userDocRef);
+  const { data: userData, isLoading: userDataLoading } = useDoc<AllData>(userDocRef);
 
   const [medication, setMedication] = useState<MedicationState>(initialMedicationState);
   const [water, setWater] = useState<WaterState>(initialWaterState);
@@ -50,18 +52,18 @@ export default function Home() {
   }, [userData, userDataLoading]);
 
   useEffect(() => {
-    if (userDocRef) {
-      setDoc(userDocRef, allData, { merge: true });
+    if (userDocRef && !userDataLoading) {
+      setDocumentNonBlocking(userDocRef, allData, { merge: true });
     }
-  }, [allData, userDocRef]);
+  }, [allData, userDocRef, userDataLoading]);
 
   useEffect(() => {
-    if (!user && !userDataLoading) {
+    if (!user && !isUserLoading) {
       router.push('/login');
     }
-  }, [user, userDataLoading, router]);
+  }, [user, isUserLoading, router]);
 
-  if (userDataLoading || !user) {
+  if (isUserLoading || !user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p>Loading...</p>
