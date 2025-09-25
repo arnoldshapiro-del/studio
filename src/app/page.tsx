@@ -27,7 +27,7 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit } from 'lucide-react';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit, Users } from 'lucide-react';
 
 
 export default function Home() {
@@ -144,6 +144,12 @@ export default function Home() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('community')} isActive={activeView === 'community'} tooltip="Community">
+                        <Users />
+                        <span>Community</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setActiveView('settings')} isActive={activeView === 'settings'} tooltip="Settings">
                         <SettingsIcon />
                         <span>Settings</span>
@@ -194,6 +200,13 @@ export default function Home() {
             
             {activeView === 'food' && (
                 <FoodTracker />
+            )}
+            
+            {activeView === 'community' && (
+                <div className="text-center">
+                    <h2 className="text-2xl font-bold">Community Features Coming Soon!</h2>
+                    <p className="text-muted-foreground mt-2">Connect with friends, join challenges, and stay motivated together.</p>
+                </div>
             )}
 
             {activeView === 'stress' && (

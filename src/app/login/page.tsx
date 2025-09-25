@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -5,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@/firebase';
 import {
   initiateAnonymousSignIn,
-  initiateEmailSignIn,
   initiateEmailSignUp,
+  initiateEmailSignIn,
 } from '@/firebase/non-blocking-login';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +22,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Leaf } from 'lucide-react';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -36,24 +37,16 @@ export default function LoginPage() {
       router.push('/');
     }
   }, [user, router]);
-  
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-            router.push('/');
-        }
-    }, (error) => {
-        setError(error.message);
-    });
 
-    return () => unsubscribe();
-  }, [router]);
-
-  const handleEmailSignIn = () => {
+  const handleEmailSignIn = async () => {
     setError(null);
     if (auth) {
-      initiateEmailSignIn(auth, email, password);
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        router.push('/');
+      } catch (e: any) {
+        setError(e.message);
+      }
     }
   };
 
