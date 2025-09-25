@@ -28,8 +28,8 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
       const formattedData = {
         medicationData: `Morning taken: ${allData.medication.history.some(h => h.period === 'morning')} at ${allData.medication.morning.time}. Evening taken: ${allData.medication.history.some(h => h.period === 'evening')} at ${allData.medication.evening.time}.`,
         waterIntakeData: `Morning: ${allData.water.history.some(h => h.period === 'morning') ? 'Yes' : 'No'}. Afternoon: ${allData.water.history.some(h => h.period === 'afternoon') ? 'Yes' : 'No'}. Evening: ${allData.water.history.some(h => h.period === 'evening') ? 'Yes' : 'No'}.`,
-        workoutData: `Treadmill: ${treadmillSessionsThisWeek}/${allData.workout.treadmill.goal} sessions. Resistance: ${resistanceSessionsThisWeek}/${allData.workout.resistance.goal} sessions.`,
-        moodData: `Recent moods: ${allData.mood.history.slice(-5).map(h => h.mood).join(', ')}`
+        workoutData: `Treadmill: ${treadmillSessionsThisWeek}/${allData.workout.treadmill.goal} sessions. Resistance: ${resistanceSessionsThisWeek}/${allData.workout.resistance.goal} sessions. Historical workouts: ${JSON.stringify(allData.workout.history.slice(-10))}`,
+        moodData: `Recent moods: ${JSON.stringify(allData.mood.history.slice(-10))}`
       };
       const result = await getInsightsAction(formattedData);
       setInsights(result);
@@ -50,7 +50,7 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : insights ? (
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{insights}</p>
+          <div className="prose prose-sm dark:prose-invert text-sm text-muted-foreground whitespace-pre-wrap">{insights}</div>
         ) : (
           <p className="text-sm text-muted-foreground">
             Click the button below to generate AI-powered insights based on your tracked activities.
@@ -76,3 +76,5 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
 };
 
 export default AiInsights;
+
+    

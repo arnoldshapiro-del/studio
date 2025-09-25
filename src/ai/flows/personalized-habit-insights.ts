@@ -16,7 +16,7 @@ const PersonalizedHabitInsightsInputSchema = z.object({
   medicationData: z.string().describe('Historical data on medication intake.'),
   waterIntakeData: z.string().describe('Historical data on water intake.'),
   workoutData: z.string().describe('Historical data on workout routines.'),
-  moodData: z.string().describe('Historical data on mood.'),
+  moodData: z.string().describe('Historical data on mood, including mood ratings and notes.'),
 });
 export type PersonalizedHabitInsightsInput = z.infer<
   typeof PersonalizedHabitInsightsInputSchema
@@ -26,7 +26,7 @@ const PersonalizedHabitInsightsOutputSchema = z.object({
   insights: z
     .string()
     .describe(
-      'Personalized insights into the user habits and trends based on the provided data. Provide at least 3 insights.'
+      'Personalized insights into the user habits and trends based on the provided data. Provide at least 3 insights in markdown format.'
     ),
 });
 export type PersonalizedHabitInsightsOutput = z.infer<
@@ -46,8 +46,8 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI health assistant that analyzes user data to provide personalized insights.
 
   Analyze the following data and provide insights into the user's habits and trends. Suggest areas for improvement.
-  Look for correlations between activities, like workouts and mood.
-  Provide at least 3 distinct insights in a friendly and encouraging tone.
+  Look for correlations between activities, like workouts and mood. For example: "I noticed your mood is often 'Great' on days you complete a resistance workout."
+  Provide at least 3 distinct insights in a friendly and encouraging tone. Format your response as a markdown list.
 
   Medication Data: {{{medicationData}}}
   Water Intake Data: {{{waterIntakeData}}}
@@ -66,3 +66,5 @@ const personalizedHabitInsightsFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

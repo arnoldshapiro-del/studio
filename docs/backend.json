@@ -102,23 +102,31 @@
       }
     },
     "MoodState": {
-        "title": "MoodState",
-        "type": "object",
-        "properties": {
-            "history": {
-                "type": "array",
-                "items": { "$ref": "#/backend/entities/MoodEntry" }
-            }
+      "title": "MoodState",
+      "type": "object",
+      "properties": {
+        "history": {
+          "type": "array",
+          "items": { "$ref": "#/backend/entities/MoodEntry" }
         }
+      }
     },
     "MoodEntry": {
-        "title": "MoodEntry",
-        "type": "object",
-        "allOf": [{ "$ref": "#/backend/entities/DatedEntry" }],
-        "properties": {
-            "mood": { "type": "string", "enum": ["great", "good", "neutral", "bad", "awful"] },
-            "notes": { "type": "string" }
+      "title": "MoodEntry",
+      "type": "object",
+      "allOf": [{ "$ref": "#/backend/entities/DatedEntry" }],
+      "properties": {
+        "mood": {
+          "type": "string",
+          "enum": ["great", "good", "neutral", "bad", "awful"],
+          "description": "User's self-reported mood rating."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Optional notes from the user about their mood."
         }
+      },
+      "required": ["mood"]
     }
   },
   "auth": {
@@ -134,3 +142,5 @@
     }
   }
 }
+
+    
