@@ -1,0 +1,133 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the request is made by a signed-in user.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Ensures that only authenticated users can access protected resources.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Enforces user-based ownership.
+     */
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user is the owner of an existing document.
+     * @path N/A
+     * @allow N/A
+     * @deny N/A
+     * @principle Combines ownership and existence checks for safer updates and deletes.
+     */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && exists(resource);
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+    }
+
+    /**
+     * @description Enforces path-based ownership for user profiles.
+     * @path /users/{userId}/userProfile
+     * @allow (get, create, update, delete) - User with ID 'user123' reads/writes their own profile.
+     * @deny (get, create, update, delete) - User with ID 'user456' attempts to read/write 'user123' profile.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/userProfile {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces path-based ownership for medication logs.
+     * @path /users/{userId}/medicationLogs/{medicationLogId}
+     * @allow (get, create, update, delete) - User with ID 'user123' reads/writes their own medication log.
+     * @deny (get, create, update, delete) - User with ID 'user456' attempts to read/write 'user123' medication log.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/medicationLogs/{medicationLogId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces path-based ownership for injection logs.
+     * @path /users/{userId}/injectionLogs/{injectionLogId}
+     * @allow (get, create, update, delete) - User with ID 'user123' reads/writes their own injection log.
+     * @deny (get, create, update, delete) - User with ID 'user456' attempts to read/write 'user123' injection log.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/injectionLogs/{injectionLogId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces path-based ownership for water intake logs.
+     * @path /users/{userId}/waterIntakeLogs/{waterIntakeLogId}
+     * @allow (get, create, update, delete) - User with ID 'user123' reads/writes their own water intake log.
+     * @deny (get, create, update, delete) - User with ID 'user456' attempts to read/write 'user123' water intake log.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/waterIntakeLogs/{waterIntakeLogId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces path-based ownership for treadmill workout logs.
+     * @path /users/{userId}/treadmillWorkoutLogs/{treadmillWorkoutLogId}
+     * @allow (get, create, update, delete) - User with ID 'user123' reads/writes their own treadmill workout log.
+     * @deny (get, create, update, delete) - User with ID 'user456' attempts to read/write 'user123' treadmill workout log.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/treadmillWorkoutLogs/{treadmillWorkoutLogId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Enforces path-based ownership for resistance training logs.
+     * @path /users/{userId}/resistanceTrainingLogs/{resistanceTrainingLogId}
+     * @allow (get, create, update, delete) - User with ID 'user123' reads/writes their own resistance training log.
+     * @deny (get, create, update, delete) - User with ID 'user456' attempts to read/write 'user123' resistance training log.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId}/resistanceTrainingLogs/{resistanceTrainingLogId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+  }
+}
