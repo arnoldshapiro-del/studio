@@ -1,191 +1,70 @@
 {
   "entities": {
-    "UserProfile": {
+    "AllData": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "UserProfile",
+      "title": "AllData",
       "type": "object",
-      "description": "Represents a user's profile in the WellTrack Daily application.",
+      "description": "A single document containing all of the user's tracking data.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the user profile."
-        },
-        "email": {
-          "type": "string",
-          "description": "User's email address.",
-          "format": "email"
-        },
-        "name": {
-          "type": "string",
-          "description": "User's full name."
-        }
-      },
-      "required": [
-        "id",
-        "email",
-        "name"
-      ]
+        "medication": { "$ref": "#/backend/entities/MedicationState" },
+        "water": { "$ref": "#/backend/entities/WaterState" },
+        "injection": { "$ref": "#/backend/entities/InjectionState" },
+        "workout": { "$ref": "#/backend/entities/WorkoutState" }
+      }
     },
-    "MedicationLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MedicationLog",
+    "MedicationState": {
+      "title": "MedicationState",
       "type": "object",
-      "description": "Records when a user takes their medication.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the medication log entry."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N MedicationLog)"
-        },
-        "timeTaken": {
-          "type": "string",
-          "description": "Timestamp indicating when the medication was taken.",
-          "format": "date-time"
-        },
-        "medicationType": {
-          "type": "string",
-          "description": "Specifies whether the medication was for morning or evening."
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId",
-        "timeTaken",
-        "medicationType"
-      ]
+        "morning": { "$ref": "#/backend/entities/TimeOfDay" },
+        "evening": { "$ref": "#/backend/entities/TimeOfDay" }
+      }
     },
-    "InjectionLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "InjectionLog",
+    "TimeOfDay": {
+      "title": "TimeOfDay",
       "type": "object",
-      "description": "Records when a user takes their injection.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the injection log entry."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N InjectionLog)"
-        },
-        "timeTaken": {
-          "type": "string",
-          "description": "Timestamp indicating when the injection was taken.",
-          "format": "date-time"
-        },
-        "scheduledDate": {
-          "type": "string",
-          "description": "The date the injection was scheduled to be taken.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId",
-        "timeTaken",
-        "scheduledDate"
-      ]
+        "taken": { "type": "boolean" },
+        "time": { "type": "string", "format": "time" }
+      }
     },
-    "WaterIntakeLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "WaterIntakeLog",
+    "WaterState": {
+      "title": "WaterState",
       "type": "object",
-      "description": "Records a user's water intake.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the water intake log entry."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N WaterIntakeLog)"
-        },
-        "timeTaken": {
-          "type": "string",
-          "description": "Timestamp indicating when the water was consumed.",
-          "format": "date-time"
-        },
-        "intakeTimeOfDay": {
-          "type": "string",
-          "description": "Specifies whether the water was consumed in the morning, afternoon, or evening."
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId",
-        "timeTaken",
-        "intakeTimeOfDay"
-      ]
+        "morning": { "type": "boolean" },
+        "afternoon": { "type": "boolean" },
+        "evening": { "type": "boolean" }
+      }
     },
-    "TreadmillWorkoutLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "TreadmillWorkoutLog",
+    "InjectionState": {
+      "title": "InjectionState",
       "type": "object",
-      "description": "Records a user's treadmill workouts.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the treadmill workout log entry."
-        },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N TreadmillWorkoutLog)"
-        },
-        "startTime": {
-          "type": "string",
-          "description": "Timestamp indicating when the workout started.",
-          "format": "date-time"
-        },
-        "durationMinutes": {
-          "type": "number",
-          "description": "Duration of the workout in minutes."
-        },
-        "speedMph": {
-          "type": "number",
-          "description": "Speed of the treadmill during the workout in miles per hour."
-        }
-      },
-      "required": [
-        "id",
-        "userProfileId",
-        "startTime",
-        "durationMinutes",
-        "speedMph"
-      ]
+        "startDate": { "type": "string", "format": "date-time" },
+        "frequency": { "type": "number" },
+        "history": { "type": "array", "items": { "type": "string", "format": "date-time" } }
+      }
     },
-    "ResistanceTrainingLog": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ResistanceTrainingLog",
+    "WorkoutState": {
+      "title": "WorkoutState",
       "type": "object",
-      "description": "Records a user's resistance training sessions.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the resistance training log entry."
+        "treadmill": {
+          "type": "object",
+          "properties": {
+            "sessionsThisWeek": { "type": "number" },
+            "goal": { "type": "number" }
+          }
         },
-        "userProfileId": {
-          "type": "string",
-          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ResistanceTrainingLog)"
-        },
-        "startTime": {
-          "type": "string",
-          "description": "Timestamp indicating when the training session started.",
-          "format": "date-time"
-        },
-        "durationMinutes": {
-          "type": "number",
-          "description": "Duration of the training session in minutes."
+        "resistance": {
+          "type": "object",
+          "properties": {
+            "sessionsThisWeek": { "type": "number" },
+            "goal": { "type": "number" }
+          }
         }
-      },
-      "required": [
-        "id",
-        "userProfileId",
-        "startTime",
-        "durationMinutes"
-      ]
+      }
     }
   },
   "auth": {
@@ -195,124 +74,9 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}/userProfile",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores user profile information. Path-based ownership ensures only the authenticated user can access their profile.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/medicationLogs/{medicationLogId}",
-        "definition": {
-          "entityName": "MedicationLog",
-          "schema": {
-            "$ref": "#/backend/entities/MedicationLog"
-          },
-          "description": "Stores medication log entries for a specific user. Path-based ownership ensures only the authenticated user can access their medication logs.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "medicationLogId",
-              "description": "The unique identifier of the medication log entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/injectionLogs/{injectionLogId}",
-        "definition": {
-          "entityName": "InjectionLog",
-          "schema": {
-            "$ref": "#/backend/entities/InjectionLog"
-          },
-          "description": "Stores injection log entries for a specific user. Path-based ownership ensures only the authenticated user can access their injection logs.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "injectionLogId",
-              "description": "The unique identifier of the injection log entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/waterIntakeLogs/{waterIntakeLogId}",
-        "definition": {
-          "entityName": "WaterIntakeLog",
-          "schema": {
-            "$ref": "#/backend/entities/WaterIntakeLog"
-          },
-          "description": "Stores water intake log entries for a specific user. Path-based ownership ensures only the authenticated user can access their water intake logs.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "waterIntakeLogId",
-              "description": "The unique identifier of the water intake log entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/treadmillWorkoutLogs/{treadmillWorkoutLogId}",
-        "definition": {
-          "entityName": "TreadmillWorkoutLog",
-          "schema": {
-            "$ref": "#/backend/entities/TreadmillWorkoutLog"
-          },
-          "description": "Stores treadmill workout log entries for a specific user. Path-based ownership ensures only the authenticated user can access their treadmill workout logs.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "treadmillWorkoutLogId",
-              "description": "The unique identifier of the treadmill workout log entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/resistanceTrainingLogs/{resistanceTrainingLogId}",
-        "definition": {
-          "entityName": "ResistanceTrainingLog",
-          "schema": {
-            "$ref": "#/backend/entities/ResistanceTrainingLog"
-          },
-          "description": "Stores resistance training log entries for a specific user. Path-based ownership ensures only the authenticated user can access their resistance training logs.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user."
-            },
-            {
-              "name": "resistanceTrainingLogId",
-              "description": "The unique identifier of the resistance training log entry."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to ensure data security, scalability, and maintainability, following the principles of Authorization Independence, Clarity of Intent, and DBAC. User-specific data is stored under `/users/{userId}`, ensuring that only the authenticated user can access their data. Each subcollection under the user's document (e.g., `/users/{userId}/medicationLogs`, `/users/{userId}/injectionLogs`, `/users/{userId}/waterIntakeLogs`, `/users/{userId}/treadmillWorkoutLogs`, `/users/{userId}/resistanceTrainingLogs`) stores records related to medication, injections, water intake, treadmill workouts, and resistance training respectively. This structure enables straightforward security rules based on path-based ownership, eliminating the need for complex `get()` calls, and supporting atomic operations. Data segregation ensures that each collection has a homogeneous security posture."
+    "/users/{userId}/data/{docId}": {
+      "schema": "AllData",
+      "description": "Stores all user tracking data in a single document for efficient retrieval."
+    }
   }
 }

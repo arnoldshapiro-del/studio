@@ -13,7 +13,7 @@ import WorkoutTracker from '@/components/dashboard/workout-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
@@ -25,7 +25,8 @@ export default function Home() {
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
-    return doc(firestore, 'users', user.uid);
+    // Changed to point to a specific document 'data' inside the user's collection
+    return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
 
   const { data: userData, isLoading: userDataLoading } = useDoc<AllData>(userDocRef);
@@ -53,9 +54,12 @@ export default function Home() {
 
   useEffect(() => {
     if (userDocRef && !userDataLoading) {
-      setDocumentNonBlocking(userDocRef, allData, { merge: true });
+      // Only write if there is a user and the initial data has been loaded or is empty
+      if (user) {
+        setDocumentNonBlocking(userDocRef, allData, { merge: true });
+      }
     }
-  }, [allData, userDocRef, userDataLoading]);
+  }, [allData, userDocRef, userDataLoading, user]);
 
   useEffect(() => {
     if (!user && !isUserLoading) {
