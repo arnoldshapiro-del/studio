@@ -23,9 +23,8 @@ export type WaterState = {
   history: (DatedEntry & { period: 'morning' | 'afternoon' | 'evening' })[];
 };
 
-export type InjectionEntry = {
+export type InjectionEntry = DatedEntry & {
   id: string;
-  date: string; // ISO string with time
 };
 
 export type InjectionState = {
@@ -53,7 +52,7 @@ export type WorkoutState = {
 
 export type MoodEntry = DatedEntry & {
     mood: 'great' | 'good' | 'neutral' | 'bad' | 'awful';
-    notes?: string;
+    notes: string;
 };
 
 export type MoodState = {

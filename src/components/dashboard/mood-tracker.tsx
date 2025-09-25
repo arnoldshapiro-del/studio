@@ -2,8 +2,8 @@
 "use client";
 
 import { useState } from 'react';
-import type { MoodState } from '@/lib/types';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import type { MoodState, MoodEntry } from '@/lib/types';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -104,6 +104,7 @@ const MoodTracker = ({ mood, setMood }: MoodTrackerProps) => {
             placeholder="Any thoughts on why you feel this way?"
             value={notes}
             onChange={handleNotesChange}
+            disabled={!selectedMood}
           />
         </div>
       </CardContent>

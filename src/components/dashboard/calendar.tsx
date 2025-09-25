@@ -81,7 +81,7 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
     }
   });
 
-  allData.mood?.history.forEach(h => {
+  allData.mood.history.forEach(h => {
       if (isSameDay(parseISO(h.date), day)) {
           events.push({ type: 'Mood', detail: h.mood, icon: getMoodIcon(h.mood), time: format(parseISO(h.date), 'p'), data: h });
       }
