@@ -16,6 +16,8 @@ import StreaksTracker from '@/components/dashboard/streaks-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
 import ProgressCharts from '@/components/dashboard/progress-charts';
+import Settings from '@/components/settings';
+import Help from '@/components/help';
 import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -23,7 +25,7 @@ import { useDoc } from '@/firebase/firestore/use-doc';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings } from 'lucide-react';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon } from 'lucide-react';
 
 
 export default function Home() {
@@ -125,13 +127,13 @@ export default function Home() {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => {}} disabled tooltip="Settings">
-                        <Settings />
+                    <SidebarMenuButton onClick={() => setActiveView('settings')} isActive={activeView === 'settings'} tooltip="Settings">
+                        <SettingsIcon />
                         <span>Settings</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => {}} disabled tooltip="Help">
+                    <SidebarMenuButton onClick={() => setActiveView('help')} isActive={activeView === 'help'} tooltip="Help">
                         <HelpCircle />
                         <span>Help</span>
                     </SidebarMenuButton>
@@ -140,7 +142,7 @@ export default function Home() {
         </Sidebar>
         <SidebarInset>
         <main className="flex-1 p-4 sm:p-6 md:p-8">
-          <DashboardHeader />
+          {activeView !== 'help' && activeView !== 'settings' && <DashboardHeader />}
           <div className='mt-8'>
             {activeView === 'dashboard' && (
               <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -175,6 +177,14 @@ export default function Home() {
             
             {activeView === 'progress' && (
                 <ProgressCharts allData={allData} />
+            )}
+
+            {activeView === 'settings' && (
+                <Settings workout={workout} setWorkout={setWorkout} />
+            )}
+
+            {activeView === 'help' && (
+                <Help />
             )}
           </div>
         </main>
