@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, Pill, GlassWater, Syringe, Footprints, Trash2, Edit } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pill, GlassWater, Syringe, Footprints, Trash2, Edit, Smile, Frown, Meh } from 'lucide-react';
 import {
   format,
   startOfWeek,
@@ -43,6 +43,17 @@ interface CalendarProps {
   onDeleteWorkout: (id: string) => void;
 }
 
+const getMoodIcon = (mood: string) => {
+    switch(mood) {
+        case 'great': return Smile;
+        case 'good': return Smile;
+        case 'neutral': return Meh;
+        case 'bad': return Frown;
+        case 'awful': return Frown;
+        default: return Meh;
+    }
+}
+
 const getEventsForDay = (day: Date, allData: AllData): Event[] => {
   const events: Event[] = [];
 
@@ -68,6 +79,12 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
     if (isSameDay(parseISO(h.date), day)) {
       events.push({ type: 'Workout', detail: h.type, icon: Footprints, time: `${h.startTime} - ${h.endTime}`, data: h });
     }
+  });
+
+  allData.mood?.history.forEach(h => {
+      if (isSameDay(parseISO(h.date), day)) {
+          events.push({ type: 'Mood', detail: h.mood, icon: getMoodIcon(h.mood), time: format(parseISO(h.date), 'p'), data: h });
+      }
   });
 
   return events.sort((a, b) => {

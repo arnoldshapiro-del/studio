@@ -29,6 +29,7 @@ const AiInsights = ({ allData }: AiInsightsProps) => {
         medicationData: `Morning taken: ${allData.medication.history.some(h => h.period === 'morning')} at ${allData.medication.morning.time}. Evening taken: ${allData.medication.history.some(h => h.period === 'evening')} at ${allData.medication.evening.time}.`,
         waterIntakeData: `Morning: ${allData.water.history.some(h => h.period === 'morning') ? 'Yes' : 'No'}. Afternoon: ${allData.water.history.some(h => h.period === 'afternoon') ? 'Yes' : 'No'}. Evening: ${allData.water.history.some(h => h.period === 'evening') ? 'Yes' : 'No'}.`,
         workoutData: `Treadmill: ${treadmillSessionsThisWeek}/${allData.workout.treadmill.goal} sessions. Resistance: ${resistanceSessionsThisWeek}/${allData.workout.resistance.goal} sessions.`,
+        moodData: `Recent moods: ${allData.mood.history.slice(-5).map(h => h.mood).join(', ')}`
       };
       const result = await getInsightsAction(formattedData);
       setInsights(result);

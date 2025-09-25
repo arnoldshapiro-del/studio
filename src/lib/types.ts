@@ -51,9 +51,19 @@ export type WorkoutState = {
   history: WorkoutEntry[];
 };
 
+export type MoodEntry = DatedEntry & {
+    mood: 'great' | 'good' | 'neutral' | 'bad' | 'awful';
+    notes?: string;
+};
+
+export type MoodState = {
+    history: MoodEntry[];
+};
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
   injection: InjectionState;
   workout: WorkoutState;
+  mood: MoodState;
 };

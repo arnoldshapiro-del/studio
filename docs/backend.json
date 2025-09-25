@@ -10,7 +10,8 @@
         "medication": { "$ref": "#/backend/entities/MedicationState" },
         "water": { "$ref": "#/backend/entities/WaterState" },
         "injection": { "$ref": "#/backend/entities/InjectionState" },
-        "workout": { "$ref": "#/backend/entities/WorkoutState" }
+        "workout": { "$ref": "#/backend/entities/WorkoutState" },
+        "mood": { "$ref": "#/backend/entities/MoodState" }
       }
     },
     "DatedEntry": {
@@ -99,6 +100,25 @@
           }
         }
       }
+    },
+    "MoodState": {
+        "title": "MoodState",
+        "type": "object",
+        "properties": {
+            "history": {
+                "type": "array",
+                "items": { "$ref": "#/backend/entities/MoodEntry" }
+            }
+        }
+    },
+    "MoodEntry": {
+        "title": "MoodEntry",
+        "type": "object",
+        "allOf": [{ "$ref": "#/backend/entities/DatedEntry" }],
+        "properties": {
+            "mood": { "type": "string", "enum": ["great", "good", "neutral", "bad", "awful"] },
+            "notes": { "type": "string" }
+        }
     }
   },
   "auth": {
