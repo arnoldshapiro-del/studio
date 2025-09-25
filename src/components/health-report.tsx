@@ -6,19 +6,11 @@ import type { AllData } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { DateRange } from 'react-day-picker';
-import { addDays, format, isWithinInterval, parseISO, subDays } from 'date-fns';
+import { format, isWithinInterval, parseISO, subDays } from 'date-fns';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Calendar as CalendarIcon, Download } from 'lucide-react';
 import { Calendar } from './ui/calendar';
 import { cn } from '@/lib/utils';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 
 interface HealthReportProps {
   allData: AllData;
@@ -35,8 +27,8 @@ const HealthReport = ({ allData }: HealthReportProps) => {
     
     const interval = { start: date.from, end: date.to };
 
-    const filterHistory = <T extends { date: string }>(history: T[]) => 
-      history.filter(entry => isWithinInterval(parseISO(entry.date), interval));
+    const filterHistory = <T extends { date: string }>(history: T[] | undefined) => 
+      (history || []).filter(entry => isWithinInterval(parseISO(entry.date), interval));
     
     return {
         medication: filterHistory(allData.medication.history),

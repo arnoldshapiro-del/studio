@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { AllData, WorkoutState } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,10 +10,12 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Dumbbell, Settings as SettingsIcon, FileText } from 'lucide-react';
 import HealthReport from './health-report';
-import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
+import { useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
 import { initialWorkoutState } from '@/lib/data';
+import { useDoc } from '@/firebase/firestore/use-doc';
+
 
 interface SettingsProps {
   allData: AllData;
@@ -30,14 +32,14 @@ const Settings = ({ allData }: SettingsProps) => {
     return doc(firestore, 'users', user.uid, 'data', 'latest');
   }, [user, firestore]);
   
-  const { data: workoutData } = useDoc<{ workout: WorkoutState }>(userDocRef);
-  const [workout, setWorkout] = useState(workoutData?.workout || initialWorkoutState);
+  const { data: userData } = useDoc<AllData>(userDocRef);
+  const [workout, setWorkout] = useState(userData?.workout || initialWorkoutState);
 
-  useState(() => {
-      if (workoutData?.workout) {
-          setWorkout(workoutData.workout);
+  useMemo(() => {
+      if (userData?.workout) {
+          setWorkout(userData.workout);
       }
-  });
+  }, [userData?.workout]);
 
   const handleGoalChange = (type: 'treadmill' | 'resistance', value: number) => {
     setWorkout(prev => ({
@@ -131,5 +133,3 @@ const Settings = ({ allData }: SettingsProps) => {
 };
 
 export default Settings;
-
-    
