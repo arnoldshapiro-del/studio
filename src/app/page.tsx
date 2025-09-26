@@ -199,6 +199,18 @@ export default function Home() {
                         <span>Food</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('sleep')} isActive={activeView === 'sleep'} tooltip="Sleep">
+                        <Moon />
+                        <span>Sleep</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                 <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('biometrics')} isActive={activeView === 'biometrics'} tooltip="Biometrics">
+                        <Activity />
+                        <span>Biometrics</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setActiveView('stress')} isActive={activeView === 'stress'} tooltip="Stress & Wellness">
                         <BrainCircuit />
