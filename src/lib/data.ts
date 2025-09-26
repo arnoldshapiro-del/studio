@@ -7,6 +7,7 @@ import type {
   MoodState,
   StressState,
   MeditationState,
+  FoodState,
 } from './types';
 
 export const initialMedicationState: MedicationState = {
@@ -45,4 +46,14 @@ export const initialStressState: StressState = {
 
 export const initialMeditationState: MeditationState = {
     history: [],
+};
+
+export const initialFoodState: FoodState = {
+  dailyGoals: {
+    calories: 2000,
+    protein: 150,
+    carbs: 250,
+    fat: 65,
+  },
+  history: [],
 };
