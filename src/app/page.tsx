@@ -27,7 +27,7 @@ import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
 import HealthReport from '@/components/health-report';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit, Users } from 'lucide-react';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit, Users, Calendar as CalendarIcon } from 'lucide-react';
 
 
 export default function Home() {
@@ -93,6 +93,71 @@ export default function Home() {
     );
   }
 
+  const renderContent = () => {
+    switch(activeView) {
+      case 'dashboard':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
+               <DashboardHeader />
+               <div className="mt-6">
+                <MedicationTracker />
+               </div>
+                <div className="mt-6">
+                <WaterTracker />
+               </div>
+            </div>
+            <div className="lg:col-span-1">
+              <StreaksTracker allData={allData} />
+            </div>
+          </div>
+        );
+      case 'calendar':
+        return (
+          <Calendar 
+            allData={allData} 
+            onUpdateWorkout={handleUpdateWorkout}
+            onDeleteWorkout={handleDeleteWorkout}
+          />
+        );
+      case 'trackers':
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <MedicationTracker />
+            <WaterTracker />
+            <InjectionTracker />
+            <WorkoutTracker />
+            <MoodTracker />
+            <div className="md:col-span-2 lg:col-span-1 lg:row-start-auto">
+              <AiInsights allData={allData} />
+            </div>
+            <div className="md:col-span-2 lg:col-span-3">
+              <AiRecommendations workoutData={allData.workout} />
+            </div>
+          </div>
+        );
+      case 'food':
+        return <FoodTracker />;
+      case 'community':
+        return (
+          <div className="text-center">
+              <h2 className="text-2xl font-bold">Community Features Coming Soon!</h2>
+              <p className="text-muted-foreground mt-2">Connect with friends, join challenges, and stay motivated together.</p>
+          </div>
+        );
+      case 'stress':
+        return <StressWellness />;
+      case 'reports':
+        return <HealthReport allData={allData} />;
+      case 'settings':
+        return <Settings />;
+      case 'help':
+        return <Help />;
+      default:
+        return null;
+    }
+  }
+
   return (
     <SidebarProvider>
     <div className="flex flex-col min-h-screen">
@@ -104,6 +169,12 @@ export default function Home() {
                     <SidebarMenuButton onClick={() => setActiveView('dashboard')} isActive={activeView === 'dashboard'} tooltip="Dashboard">
                         <LayoutDashboard />
                         <span>Dashboard</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('calendar')} isActive={activeView === 'calendar'} tooltip="Calendar">
+                        <CalendarIcon />
+                        <span>Calendar</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
@@ -152,65 +223,8 @@ export default function Home() {
         </Sidebar>
         <SidebarInset>
         <main className="flex-1 p-4 sm:p-6 md:p-8">
-          {activeView !== 'help' && activeView !== 'settings' && activeView !== 'reports' && <DashboardHeader />}
           <div className='mt-8'>
-            {activeView === 'dashboard' && (
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <div className="lg:col-span-3">
-                  <Calendar 
-                    allData={allData} 
-                    onUpdateWorkout={handleUpdateWorkout}
-                    onDeleteWorkout={handleDeleteWorkout}
-                  />
-                </div>
-                <div className="lg:col-span-1">
-                  <StreaksTracker allData={allData} />
-                </div>
-              </div>
-            )}
-
-            {activeView === 'trackers' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                <MedicationTracker />
-                <WaterTracker />
-                <InjectionTracker />
-                <WorkoutTracker />
-                <MoodTracker />
-                <div className="md:col-span-2 lg:col-span-1 lg:row-start-auto">
-                  <AiInsights allData={allData} />
-                </div>
-                <div className="md:col-span-2 lg:col-span-3">
-                  <AiRecommendations workoutData={allData.workout} />
-                </div>
-              </div>
-            )}
-            
-            {activeView === 'food' && (
-                <FoodTracker />
-            )}
-            
-            {activeView === 'community' && (
-                <div className="text-center">
-                    <h2 className="text-2xl font-bold">Community Features Coming Soon!</h2>
-                    <p className="text-muted-foreground mt-2">Connect with friends, join challenges, and stay motivated together.</p>
-                </div>
-            )}
-
-            {activeView === 'stress' && (
-              <StressWellness />
-            )}
-
-            {activeView === 'reports' && (
-                <HealthReport allData={allData} />
-            )}
-
-            {activeView === 'settings' && (
-                <Settings />
-            )}
-
-            {activeView === 'help' && (
-                <Help />
-            )}
+            {renderContent()}
           </div>
         </main>
         </SidebarInset>
