@@ -103,11 +103,16 @@ const MoodTracker = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="font-headline text-lg flex items-center gap-2">
           <HeartPulse className="text-primary" />
           How are you feeling?
         </CardTitle>
+        <VoiceButton 
+          onCommand={handleVoiceCommand}
+          activityType="mood"
+          size="sm"
+        />
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex justify-around">
