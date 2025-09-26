@@ -46,5 +46,3 @@ export const initialStressState: StressState = {
 export const initialMeditationState: MeditationState = {
     history: [],
 };
-
-    

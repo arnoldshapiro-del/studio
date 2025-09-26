@@ -173,5 +173,3 @@ const WorkoutTracker = () => {
 };
 
 export default WorkoutTracker;
-
-    

@@ -86,5 +86,3 @@ const WaterTracker = () => {
 };
 
 export default WaterTracker;
-
-    

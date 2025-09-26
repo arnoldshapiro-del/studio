@@ -108,5 +108,3 @@ const MedicationTracker = () => {
 };
 
 export default MedicationTracker;
-
-    
