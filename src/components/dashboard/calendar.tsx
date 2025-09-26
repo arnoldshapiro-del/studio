@@ -19,6 +19,7 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
+  parse,
   parseISO,
   isToday,
   addMonths,
@@ -43,6 +44,17 @@ interface CalendarProps {
   onDeleteWorkout: (id: string) => void;
 }
 
+const formatTimeToAMPM = (time: string) => {
+    if (!time) return '';
+    try {
+        const date = parse(time, 'HH:mm', new Date());
+        return format(date, 'h:mm a');
+    } catch (e) {
+        console.error("Failed to format time", time, e);
+        return time; // fallback
+    }
+};
+
 const getMoodIcon = (mood: string) => {
     switch(mood) {
         case 'great': return Smile;
@@ -59,7 +71,7 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
 
   allData.medication.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Medication', detail: `${h.period} dose`, icon: Pill, time: h.time });
+      events.push({ type: 'Medication', detail: `${h.period} dose`, icon: Pill, time: formatTimeToAMPM(h.time) });
     }
   });
 
@@ -71,36 +83,44 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
 
   allData.injection.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Injection', detail: 'Mounjaro Shot', icon: Syringe, time: format(parseISO(h.date), 'p') });
+      events.push({ type: 'Injection', detail: 'Mounjaro Shot', icon: Syringe, time: format(parseISO(h.date), 'h:mm a') });
     }
   });
 
   allData.workout.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Workout', detail: h.type, icon: Footprints, time: `${h.startTime} - ${h.endTime}`, data: h });
+      events.push({ type: 'Workout', detail: h.type, icon: Footprints, time: `${formatTimeToAMPM(h.startTime)} - ${formatTimeToAMPM(h.endTime)}`, data: h });
     }
   });
 
   allData.mood.history.forEach(h => {
       if (isSameDay(parseISO(h.date), day)) {
-          events.push({ type: 'Mood', detail: h.mood, icon: getMoodIcon(h.mood), time: format(parseISO(h.date), 'p'), data: h });
+          events.push({ type: 'Mood', detail: h.mood, icon: getMoodIcon(h.mood), time: format(parseISO(h.date), 'h:mm a'), data: h });
       }
   });
 
   allData.stress.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Stress', detail: `Level ${h.level}`, icon: Pill, time: format(parseISO(h.date), 'p') });
+      events.push({ type: 'Stress', detail: `Level ${h.level}`, icon: Pill, time: format(parseISO(h.date), 'h:mm a') });
     }
   });
 
   allData.meditation.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Meditation', detail: `${h.duration} min`, icon: Pill, time: format(parseISO(h.date), 'p') });
+      events.push({ type: 'Meditation', detail: `${h.duration} min`, icon: Pill, time: format(parseISO(h.date), 'h:mm a') });
     }
   });
 
   return events.sort((a, b) => {
-    if (a.time && b.time) return a.time.localeCompare(b.time);
+    if (a.time && b.time) {
+        try {
+            const timeA = parse(a.time, 'h:mm a', new Date());
+            const timeB = parse(b.time, 'h:mm a', new Date());
+            return timeA.getTime() - timeB.getTime();
+        } catch (e) {
+            return 0;
+        }
+    }
     if (a.time) return -1;
     if (b.time) return 1;
     return 0;
@@ -351,3 +371,5 @@ const Calendar = ({ allData, onUpdateWorkout, onDeleteWorkout }: CalendarProps) 
 };
 
 export default Calendar;
+
+    

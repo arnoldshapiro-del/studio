@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { addDays, format, differenceInDays, isToday, parseISO, set } from 'date-fns';
+import { addDays, format, differenceInDays, isToday, parse, parseISO, set } from 'date-fns';
 import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
@@ -73,7 +73,7 @@ const InjectionTracker = () => {
 
     const updatedHistory = [...(injection.history || []), { id: crypto.randomUUID(), date: logDate.toISOString() }];
     setDocumentNonBlocking(userDocRef, { injection: { ...injection, history: updatedHistory } }, { merge: true });
-    toast({ title: "Injection Logged!", description: `Logged at ${format(logDate, 'p')}. Great job staying on track.` });
+    toast({ title: "Injection Logged!", description: `Logged at ${format(logDate, 'h:mm a')}. Great job staying on track.` });
   };
   
   const handleSaveSettings = () => {
