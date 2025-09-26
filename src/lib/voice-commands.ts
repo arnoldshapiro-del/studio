@@ -142,6 +142,70 @@ const COMMAND_PATTERNS: CommandPattern[] = [
       
       return { site: `${site} ${side}` };
     }
+  },
+
+  // Sleep commands
+  {
+    keywords: ['slept', 'sleep', 'bed', 'woke', 'hours'],
+    action: 'log_sleep',
+    type: 'sleep',
+    parser: (text: string) => {
+      // Extract hours of sleep
+      const hoursMatch = text.match(/(\d+)\s*(hour|hr)/i);
+      const hours = hoursMatch ? parseInt(hoursMatch[1]) : 8;
+      
+      // Extract quality indicators
+      const qualityWords = {
+        5: ['excellent', 'amazing', 'perfect', 'great'],
+        4: ['good', 'well', 'fine', 'nice'],
+        3: ['okay', 'alright', 'average'],
+        2: ['poor', 'bad', 'restless'],
+        1: ['terrible', 'awful', 'horrible']
+      };
+      
+      let quality = 3; // default
+      const lowerText = text.toLowerCase();
+      for (const [rating, words] of Object.entries(qualityWords)) {
+        if (words.some(word => lowerText.includes(word))) {
+          quality = parseInt(rating);
+          break;
+        }
+      }
+      
+      return { hours, quality };
+    }
+  },
+
+  // Biometrics commands
+  {
+    keywords: ['heart', 'rate', 'pulse', 'bpm'],
+    action: 'log_biometric',
+    type: 'biometrics',
+    parser: (text: string) => {
+      const bpmMatch = text.match(/(\d+)\s*(bpm|beats)/i);
+      const value = bpmMatch ? parseInt(bpmMatch[1]) : null;
+      return { type: 'heartRate', value };
+    }
+  },
+  {
+    keywords: ['weight', 'weigh', 'kg', 'pounds'],
+    action: 'log_biometric',
+    type: 'biometrics',
+    parser: (text: string) => {
+      const weightMatch = text.match(/(\d+(?:\.\d+)?)\s*(kg|kilogram|pound|lb)/i);
+      const value = weightMatch ? parseFloat(weightMatch[1]) : null;
+      return { type: 'weight', value };
+    }
+  },
+  {
+    keywords: ['temperature', 'fever', 'temp', 'celsius'],
+    action: 'log_biometric',
+    type: 'biometrics',
+    parser: (text: string) => {
+      const tempMatch = text.match(/(\d+(?:\.\d+)?)\s*(degree|celsius|°c|°)/i);
+      const value = tempMatch ? parseFloat(tempMatch[1]) : null;
+      return { type: 'temperature', value };
+    }
   }
 ];
 
