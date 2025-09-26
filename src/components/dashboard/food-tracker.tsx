@@ -385,19 +385,26 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
                 <Utensils className="text-primary" />
                 AI Food Logger
               </CardTitle>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Meal type:</span>
-                <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="breakfast">Breakfast</SelectItem>
-                    <SelectItem value="lunch">Lunch</SelectItem>
-                    <SelectItem value="dinner">Dinner</SelectItem>
-                    <SelectItem value="snack">Snack</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Meal type:</span>
+                  <Select value={selectedMealType} onValueChange={(value) => setSelectedMealType(value as MealType)}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                      <SelectItem value="snack">Snack</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <VoiceButton 
+                  onCommand={handleVoiceCommand}
+                  activityType="food"
+                  size="sm"
+                />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
