@@ -239,7 +239,7 @@ export default function Home() {
             {renderContent()}
           </div>
         </main>
-        </SidebarInset>
+        </div>
       </div>
     </div>
   );
