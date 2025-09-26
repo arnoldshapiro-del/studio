@@ -14,6 +14,9 @@ import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
 import { initialMoodState } from '@/lib/data';
+import { VoiceButton } from '@/components/ui/voice-button';
+import { VoiceCommand } from '@/lib/voice-commands';
+import { useToast } from '@/hooks/use-toast';
 
 type MoodOption = 'great' | 'good' | 'neutral' | 'bad' | 'awful';
 
