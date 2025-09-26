@@ -58,6 +58,7 @@ export default function Home() {
         food: userData.food || initialFoodState,
         sleep: userData.sleep || initialSleepState,
         biometrics: userData.biometrics || initialBiometricsState,
+        social: userData.social || initialSocialState,
       };
     }
     return {
@@ -71,6 +72,7 @@ export default function Home() {
       food: initialFoodState,
       sleep: initialSleepState,
       biometrics: initialBiometricsState,
+      social: initialSocialState,
     };
   }, [userData]);
 
