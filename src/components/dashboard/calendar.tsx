@@ -87,6 +87,18 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
       }
   });
 
+  allData.stress.history.forEach(h => {
+    if (isSameDay(parseISO(h.date), day)) {
+      events.push({ type: 'Stress', detail: `Level ${h.level}`, icon: Pill, time: format(parseISO(h.date), 'p') });
+    }
+  });
+
+  allData.meditation.history.forEach(h => {
+    if (isSameDay(parseISO(h.date), day)) {
+      events.push({ type: 'Meditation', detail: `${h.duration} min`, icon: Pill, time: format(parseISO(h.date), 'p') });
+    }
+  });
+
   return events.sort((a, b) => {
     if (a.time && b.time) return a.time.localeCompare(b.time);
     if (a.time) return -1;
@@ -282,7 +294,7 @@ const Calendar = ({ allData, onUpdateWorkout, onDeleteWorkout }: CalendarProps) 
 
 
   return (
-    <Card className="mt-6">
+    <Card>
       {renderHeader()}
       <CardContent className="p-0">
         {view === 'month' && renderMonthView()}
