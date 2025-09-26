@@ -161,6 +161,12 @@ export default function Home() {
         return <CommunityHub socialData={allData.social} userDocRef={userDocRef} />;
       case 'achievements':
         return <AchievementTracker socialData={allData.social} allHealthData={allData} userDocRef={userDocRef} />;
+      case 'dashboard':
+        return <HealthDashboard allHealthData={allData} userDocRef={userDocRef} />;
+      case 'reports':
+        return <HealthReports allHealthData={allData} analyticsData={allData.analytics} userDocRef={userDocRef} />;
+      case 'analytics':
+        return <AnalyticsInsights allHealthData={allData} analyticsData={allData.analytics} userDocRef={userDocRef} />;
       case 'community':
         return (
           <div className="text-center">
