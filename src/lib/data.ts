@@ -11,6 +11,7 @@ import type {
   SleepState,
   BiometricsState,
   SocialState,
+  AnalyticsState,
 } from './types';
 
 export const initialMedicationState: MedicationState = {
@@ -101,4 +102,19 @@ export const initialSocialState: SocialState = {
   totalPoints: 0,
   currentStreak: 0,
   longestStreak: 0,
+};
+
+export const initialAnalyticsState: AnalyticsState = {
+  reports: [],
+  patterns: [],
+  anomalies: [],
+  correlations: [],
+  wellnessScores: [],
+  priorityActions: [],
+  preferences: {
+    dashboardWidgets: ['wellness-score', 'priority-actions', 'trends', 'correlations'],
+    reportFrequency: 'monthly',
+    anomalyAlerts: true,
+    shareWithProvider: false,
+  },
 };
