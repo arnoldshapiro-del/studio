@@ -18,6 +18,8 @@ import AiRecommendations from '@/components/dashboard/ai-recommendations';
 import FoodTracker from '@/components/dashboard/food-tracker';
 import SleepTracker from '@/components/dashboard/sleep-tracker';
 import BiometricsTracker from '@/components/dashboard/biometrics-tracker';
+import CommunityHub from '@/components/dashboard/community-hub';
+import AchievementTracker from '@/components/dashboard/achievement-tracker';
 import StressWellness from '@/components/dashboard/stress-wellness';
 import Settings from '@/components/settings';
 import Help from '@/components/help';
