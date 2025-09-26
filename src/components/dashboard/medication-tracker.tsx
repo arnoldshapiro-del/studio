@@ -76,6 +76,11 @@ const MedicationTracker = () => {
           <Pill className="text-primary" />
           Medication
         </CardTitle>
+        <VoiceButton 
+          onCommand={handleVoiceCommand}
+          activityType="medication"
+          size="sm"
+        />
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center justify-between p-3 rounded-md bg-secondary/50">
