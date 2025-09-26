@@ -64,6 +64,7 @@ export default function Home() {
         sleep: userData.sleep || initialSleepState,
         biometrics: userData.biometrics || initialBiometricsState,
         social: userData.social || initialSocialState,
+        analytics: userData.analytics || initialAnalyticsState,
       };
     }
     return {
@@ -78,6 +79,7 @@ export default function Home() {
       sleep: initialSleepState,
       biometrics: initialBiometricsState,
       social: initialSocialState,
+      analytics: initialAnalyticsState,
     };
   }, [userData]);
 
