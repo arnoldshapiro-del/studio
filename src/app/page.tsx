@@ -306,6 +306,5 @@ export default function Home() {
         </SidebarInset>
       </div>
     </div>
-    </SidebarProvider>
   );
 }
