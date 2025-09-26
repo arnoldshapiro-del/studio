@@ -191,43 +191,61 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className='flex flex-1'>
-        <div className="w-64 bg-gray-100 border-r">
+        <div className="w-64 bg-gray-900 border-r border-gray-700 text-white">
             <div className="p-4">
                 <div className="space-y-1">
-                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <LayoutDashboard className="w-4 h-4" />
+                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'dashboard' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <LayoutDashboard className="w-4 h-4 text-white" />
                         <span>Dashboard</span>
                     </button>
-                    <button onClick={() => setActiveView('calendar')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'calendar' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <CalendarIcon className="w-4 h-4" />
+                    <button onClick={() => setActiveView('calendar')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'calendar' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <CalendarIcon className="w-4 h-4 text-white" />
                         <span>Calendar</span>
                     </button>
-                    <button onClick={() => setActiveView('trackers')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'trackers' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <CheckSquare className="w-4 h-4" />
+                    <button onClick={() => setActiveView('trackers')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'trackers' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <CheckSquare className="w-4 h-4 text-white" />
                         <span>Daily Trackers</span>
                     </button>
-                    <button onClick={() => setActiveView('food')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'food' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <Utensils className="w-4 h-4" />
+                    <button onClick={() => setActiveView('food')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'food' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <Utensils className="w-4 h-4 text-white" />
                         <span>Food</span>
                     </button>
-                    <button onClick={() => setActiveView('community')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'community' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <Users className="w-4 h-4" />
+                    <button onClick={() => setActiveView('stress')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'stress' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <BrainCircuit className="w-4 h-4 text-white" />
+                        <span>Stress & Wellness</span>
+                    </button>
+                    <button onClick={() => setActiveView('community')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'community' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <Users className="w-4 h-4 text-white" />
                         <span>Community</span>
                     </button>
-                    <button onClick={() => setActiveView('achievements')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'achievements' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <Trophy className="w-4 h-4" />
+                    <button onClick={() => setActiveView('achievements')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'achievements' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <Trophy className="w-4 h-4 text-white" />
                         <span>Achievements</span>
                     </button>
                 </div>
-                <div className="mt-4 pt-4 border-t">
-                    <div className="text-xs font-medium text-gray-500 mb-2">Analytics & Reports</div>
-                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <Zap className="w-4 h-4" />
+                <div className="mt-6 pt-4 border-t border-gray-700">
+                    <div className="text-xs font-medium text-gray-400 mb-3 px-3">Analytics & Reports</div>
+                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'dashboard' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <Zap className="w-4 h-4 text-white" />
                         <span>Health Dashboard</span>
                     </button>
-                    <button onClick={() => setActiveView('reports')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'reports' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
-                        <FileText className="w-4 h-4" />
+                    <button onClick={() => setActiveView('reports')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'reports' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <FileText className="w-4 h-4 text-white" />
                         <span>Health Reports</span>
+                    </button>
+                    <button onClick={() => setActiveView('analytics')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'analytics' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <TrendingUp className="w-4 h-4 text-white" />
+                        <span>Analytics & Insights</span>
+                    </button>
+                </div>
+                <div className="mt-6 pt-4 border-t border-gray-700">
+                    <button onClick={() => setActiveView('settings')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'settings' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <SettingsIcon className="w-4 h-4 text-white" />
+                        <span>Settings</span>
+                    </button>
+                    <button onClick={() => setActiveView('help')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${activeView === 'help' ? 'bg-gray-700 text-white' : 'text-gray-300 hover:bg-gray-800 hover:text-white'}`}>
+                        <HelpCircle className="w-4 h-4 text-white" />
+                        <span>Help</span>
                     </button>
                 </div>
             </div>
