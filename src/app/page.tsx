@@ -188,7 +188,6 @@ export default function Home() {
   }
 
   return (
-    <SidebarProvider>
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className='flex flex-1'>
