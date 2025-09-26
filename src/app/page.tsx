@@ -199,104 +199,40 @@ export default function Home() {
                         <span>Dashboard</span>
                     </button>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('calendar')} isActive={activeView === 'calendar'} tooltip="Calendar">
-                        <CalendarIcon />
+                    <button onClick={() => setActiveView('calendar')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'calendar' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <CalendarIcon className="w-4 h-4" />
                         <span>Calendar</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('trackers')} isActive={activeView === 'trackers'} tooltip="Daily Trackers">
-                        <CheckSquare />
+                    </button>
+                    <button onClick={() => setActiveView('trackers')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'trackers' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <CheckSquare className="w-4 h-4" />
                         <span>Daily Trackers</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('food')} isActive={activeView === 'food'} tooltip="Food">
-                        <Utensils />
+                    </button>
+                    <button onClick={() => setActiveView('food')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'food' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <Utensils className="w-4 h-4" />
                         <span>Food</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('sleep')} isActive={activeView === 'sleep'} tooltip="Sleep">
-                        <Moon />
-                        <span>Sleep</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('biometrics')} isActive={activeView === 'biometrics'} tooltip="Biometrics">
-                        <Activity />
-                        <span>Biometrics</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('community')} isActive={activeView === 'community'} tooltip="Community">
-                        <Users />
+                    </button>
+                    <button onClick={() => setActiveView('community')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'community' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <Users className="w-4 h-4" />
                         <span>Community</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('achievements')} isActive={activeView === 'achievements'} tooltip="Achievements">
-                        <Trophy />
+                    </button>
+                    <button onClick={() => setActiveView('achievements')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'achievements' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <Trophy className="w-4 h-4" />
                         <span>Achievements</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </SidebarGroup>
-        
-        <SidebarGroup>
-            <SidebarGroupLabel>Analytics & Reports</SidebarGroupLabel>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('dashboard')} isActive={activeView === 'dashboard'} tooltip="Health Dashboard">
-                        <Zap />
+                    </button>
+                </div>
+                <div className="mt-4 pt-4 border-t">
+                    <div className="text-xs font-medium text-gray-500 mb-2">Analytics & Reports</div>
+                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <Zap className="w-4 h-4" />
                         <span>Health Dashboard</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('reports')} isActive={activeView === 'reports'} tooltip="Health Reports">
-                        <FileText />
+                    </button>
+                    <button onClick={() => setActiveView('reports')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'reports' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <FileText className="w-4 h-4" />
                         <span>Health Reports</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('analytics')} isActive={activeView === 'analytics'} tooltip="Analytics & Insights">
-                        <TrendingUp />
-                        <span>Analytics & Insights</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('stress')} isActive={activeView === 'stress'} tooltip="Stress & Wellness">
-                        <BrainCircuit />
-                        <span>Stress & Wellness</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('reports')} isActive={activeView === 'reports'} tooltip="Health Reports">
-                        <BarChart />
-                        <span>Reports</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('community')} isActive={activeView === 'community'} tooltip="Community">
-                        <Users />
-                        <span>Community</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('settings')} isActive={activeView === 'settings'} tooltip="Settings">
-                        <SettingsIcon />
-                        <span>Settings</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-                 <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('help')} isActive={activeView === 'help'} tooltip="Help">
-                        <HelpCircle />
-                        <span>Help</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-            </SidebarMenu>
-        </Sidebar>
+                    </button>
+                </div>
+            </div>
+        </div>
         <SidebarInset>
         <main className="flex-1 p-4 sm:p-6 md:p-8">
           <div className='mt-8'>
