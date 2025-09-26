@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 const WaterTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -41,6 +42,18 @@ const WaterTracker = () => {
     }
 
     setDocumentNonBlocking(userDocRef, { water: { ...water, history: updatedHistory } }, { merge: true });
+  };
+
+  const handleVoiceCommand = (command: VoiceCommand) => {
+    if (command.action === 'log_water') {
+      const period = command.data?.period || 'morning';
+      handleToggle(period);
+      
+      toast({
+        title: 'Water Intake Logged',
+        description: `${period.charAt(0).toUpperCase() + period.slice(1)} water intake marked`,
+      });
+    }
   };
 
   const waterOptions: { period: 'morning' | 'afternoon' | 'evening'; label: string }[] = [
