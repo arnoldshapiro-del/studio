@@ -144,6 +144,10 @@ export default function Home() {
         );
       case 'food':
         return <FoodTracker foodData={allData.food} userDocRef={userDocRef} />;
+      case 'sleep':
+        return <SleepTracker sleepData={allData.sleep} userDocRef={userDocRef} />;
+      case 'biometrics':
+        return <BiometricsTracker biometricsData={allData.biometrics} userDocRef={userDocRef} />;
       case 'community':
         return (
           <div className="text-center">
