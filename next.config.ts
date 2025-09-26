@@ -31,11 +31,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // This is required to allow the Next.js dev server to work in this environment
-  allowedDevOrigins: [
-    'https://*.cloudworkstations.dev',
-    'https://*.firebase.studio',
-  ],
   experimental: {},
 };
 
