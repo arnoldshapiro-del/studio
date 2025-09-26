@@ -116,6 +116,88 @@ export type FoodState = {
   history: FoodEntry[];
 };
 
+// Sleep tracking types
+export type SleepStage = 'deep' | 'light' | 'rem' | 'awake';
+
+export type SleepEnvironment = {
+  temperature?: number; // Celsius
+  noise?: 'quiet' | 'moderate' | 'noisy';
+  screenTime?: number; // minutes before bed
+  lighting?: 'dark' | 'dim' | 'bright';
+};
+
+export type SleepEntry = DatedEntry & {
+  id: string;
+  bedtime: string; // ISO time
+  wakeTime: string; // ISO time
+  duration: number; // total minutes
+  quality: 1 | 2 | 3 | 4 | 5; // 1=poor, 5=excellent
+  stages?: {
+    deep: number; // minutes
+    light: number; // minutes
+    rem: number; // minutes
+    awake: number; // minutes
+  };
+  environment?: SleepEnvironment;
+  notes?: string;
+  sleepDebt?: number; // accumulated sleep debt in hours
+};
+
+export type SleepState = {
+  targetHours: number; // daily sleep goal
+  history: SleepEntry[];
+};
+
+// Biometrics tracking types
+export type BiometricReading = {
+  value: number;
+  timestamp: string;
+  source?: 'manual' | 'device' | 'wearable';
+  deviceName?: string;
+};
+
+export type BiometricEntry = DatedEntry & {
+  id: string;
+  heartRate?: BiometricReading[];
+  bloodPressure?: {
+    systolic: number;
+    diastolic: number;
+    timestamp: string;
+    source?: 'manual' | 'device';
+  }[];
+  temperature?: BiometricReading[]; // Celsius
+  weight?: BiometricReading[]; // kg
+  oxygenSaturation?: BiometricReading[]; // SpO2 percentage
+  heartRateVariability?: BiometricReading[]; // HRV in ms
+  steps?: BiometricReading[];
+  respiratoryRate?: BiometricReading[]; // breaths per minute
+};
+
+export type BiometricsState = {
+  personalInfo: {
+    age?: number;
+    height?: number; // cm
+    biologicalSex?: 'male' | 'female' | 'other';
+  };
+  targets: {
+    weight?: number; // target weight in kg
+    restingHeartRate?: number;
+    dailySteps?: number;
+  };
+  alerts: {
+    enabled: boolean;
+    thresholds: {
+      heartRateHigh?: number;
+      heartRateLow?: number;
+      systolicHigh?: number;
+      diastolicHigh?: number;
+      temperatureHigh?: number;
+      oxygenSaturationLow?: number;
+    };
+  };
+  history: BiometricEntry[];
+};
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
@@ -125,4 +207,6 @@ export type AllData = {
   stress: StressState;
   meditation: MeditationState;
   food: FoodState;
+  sleep: SleepState;
+  biometrics: BiometricsState;
 };
