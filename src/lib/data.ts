@@ -8,6 +8,8 @@ import type {
   StressState,
   MeditationState,
   FoodState,
+  SleepState,
+  BiometricsState,
 } from './types';
 
 export const initialMedicationState: MedicationState = {
@@ -54,6 +56,30 @@ export const initialFoodState: FoodState = {
     protein: 150,
     carbs: 250,
     fat: 65,
+  },
+  history: [],
+};
+
+export const initialSleepState: SleepState = {
+  targetHours: 8,
+  history: [],
+};
+
+export const initialBiometricsState: BiometricsState = {
+  personalInfo: {},
+  targets: {
+    dailySteps: 10000,
+  },
+  alerts: {
+    enabled: false,
+    thresholds: {
+      heartRateHigh: 100,
+      heartRateLow: 60,
+      systolicHigh: 140,
+      diastolicHigh: 90,
+      temperatureHigh: 38.5,
+      oxygenSaturationLow: 95,
+    },
   },
   history: [],
 };
