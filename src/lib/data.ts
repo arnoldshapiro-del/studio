@@ -10,6 +10,7 @@ import type {
   FoodState,
   SleepState,
   BiometricsState,
+  SocialState,
 } from './types';
 
 export const initialMedicationState: MedicationState = {
@@ -82,4 +83,22 @@ export const initialBiometricsState: BiometricsState = {
     },
   },
   history: [],
+};
+
+export const initialSocialState: SocialState = {
+  profile: {
+    displayName: 'Health Enthusiast',
+    privacyLevel: 'friends',
+    shareAchievements: true,
+    shareProgress: true,
+  },
+  friends: [],
+  challenges: [],
+  achievements: [],
+  communityPosts: [],
+  accountabilityPartners: [],
+  messages: [],
+  totalPoints: 0,
+  currentStreak: 0,
+  longestStreak: 0,
 };
