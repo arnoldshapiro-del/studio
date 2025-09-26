@@ -31,6 +31,7 @@ const moodOptions: { value: MoodOption; label: string; icon: React.ElementType }
 const MoodTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -55,7 +56,6 @@ const MoodTracker = () => {
     }
   }, [todayMoodEntry]);
 
-
   const updateMoodInFirestore = (moodValue: MoodOption, moodNotes: string) => {
     if (!userDocRef) return;
     const today = new Date().toISOString();
@@ -67,6 +67,18 @@ const MoodTracker = () => {
   const handleMoodSelect = (moodValue: MoodOption) => {
     setSelectedMood(moodValue);
     updateMoodInFirestore(moodValue, notes);
+  };
+
+  const handleVoiceCommand = (command: VoiceCommand) => {
+    if (command.action === 'log_mood') {
+      const moodValue = command.data?.mood || 'neutral';
+      handleMoodSelect(moodValue as MoodOption);
+      
+      toast({
+        title: 'Mood Logged',
+        description: `Mood set to ${moodValue}`,
+      });
+    }
   };
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
