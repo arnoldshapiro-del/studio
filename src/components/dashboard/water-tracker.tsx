@@ -73,7 +73,14 @@ const WaterTracker = () => {
           <GlassWater className="text-primary" />
           Water Intake
         </CardTitle>
-        <p className="text-sm text-muted-foreground">16 oz each</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-muted-foreground">16 oz each</p>
+          <VoiceButton 
+            onCommand={handleVoiceCommand}
+            activityType="water"
+            size="sm"
+          />
+        </div>
       </CardHeader>
       <CardContent className="flex flex-col sm:flex-row gap-4">
         {waterOptions.map(({ period, label }) => (
