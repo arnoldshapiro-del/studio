@@ -131,7 +131,7 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
 const Calendar = ({ allData, onUpdateWorkout, onDeleteWorkout }: CalendarProps) => {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>('month');
+  const [view, setView] = useState<CalendarView>('day');
   const [selectedEvent, setSelectedEvent] = useState<WorkoutEntry | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
