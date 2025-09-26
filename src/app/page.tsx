@@ -137,7 +137,7 @@ export default function Home() {
           </div>
         );
       case 'food':
-        return <FoodTracker />;
+        return <FoodTracker foodData={allData.food} userDocRef={userDocRef} />;
       case 'community':
         return (
           <div className="text-center">
