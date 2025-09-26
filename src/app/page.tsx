@@ -53,6 +53,7 @@ export default function Home() {
         mood: userData.mood || initialMoodState,
         stress: userData.stress || initialStressState,
         meditation: userData.meditation || initialMeditationState,
+        food: userData.food || initialFoodState,
       };
     }
     return {
@@ -63,6 +64,7 @@ export default function Home() {
       mood: initialMoodState,
       stress: initialStressState,
       meditation: initialMeditationState,
+      food: initialFoodState,
     };
   }, [userData]);
 
