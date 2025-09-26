@@ -233,7 +233,7 @@ export default function Home() {
                 </div>
             </div>
         </div>
-        <SidebarInset>
+        <div className="flex-1">
         <main className="flex-1 p-4 sm:p-6 md:p-8">
           <div className='mt-8'>
             {renderContent()}
