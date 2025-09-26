@@ -242,6 +242,30 @@ export default function Home() {
                         <span>Achievements</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
+            </SidebarMenu>
+        </SidebarGroup>
+        
+        <SidebarGroup>
+            <SidebarGroupLabel>Analytics & Reports</SidebarGroupLabel>
+            <SidebarMenu>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('dashboard')} isActive={activeView === 'dashboard'} tooltip="Health Dashboard">
+                        <Zap />
+                        <span>Health Dashboard</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('reports')} isActive={activeView === 'reports'} tooltip="Health Reports">
+                        <FileText />
+                        <span>Health Reports</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                    <SidebarMenuButton onClick={() => setActiveView('analytics')} isActive={activeView === 'analytics'} tooltip="Analytics & Insights">
+                        <TrendingUp />
+                        <span>Analytics & Insights</span>
+                    </SidebarMenuButton>
+                </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setActiveView('stress')} isActive={activeView === 'stress'} tooltip="Stress & Wellness">
                         <BrainCircuit />
