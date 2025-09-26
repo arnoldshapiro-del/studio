@@ -37,6 +37,8 @@ import { BarcodeDetector as BarcodeDetectorPolyfill } from 'barcode-detector/pur
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { DocumentReference } from 'firebase/firestore';
 import { format, isToday, startOfDay } from 'date-fns';
+import { VoiceButton } from '@/components/ui/voice-button';
+import { VoiceCommand } from '@/lib/voice-commands';
 
 type CaptureMode = 'photo' | 'barcode';
 
