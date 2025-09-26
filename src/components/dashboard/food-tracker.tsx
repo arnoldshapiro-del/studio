@@ -488,10 +488,10 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
                     <Button
                       className="flex-1"
                       onClick={takePhoto}
-                      disabled={hasCameraPermission === false || isPending}
+                      disabled={isPending}
                     >
                       <Camera className="mr-2" />
-                      Take Photo
+                      {hasCameraPermission === false ? 'Request Camera Access' : 'Take Photo'}
                     </Button>
                      <Button
                         className="flex-1"
