@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { AllData, WorkoutEntry } from '@/lib/types';
-import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState, initialStressState, initialMeditationState, initialFoodState, initialSleepState, initialBiometricsState, initialSocialState } from '@/lib/data';
+import { initialMedicationState, initialWaterState, initialInjectionState, initialWorkoutState, initialMoodState, initialStressState, initialMeditationState, initialFoodState, initialSleepState, initialBiometricsState, initialSocialState, initialAnalyticsState } from '@/lib/data';
 
 import Header from '@/components/header';
 import DashboardHeader from '@/components/dashboard/dashboard-header';
