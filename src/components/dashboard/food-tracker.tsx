@@ -294,6 +294,19 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
     }
   };
 
+  const handleVoiceCommand = (command: VoiceCommand) => {
+    if (command.action === 'log_food_intent') {
+      const mealType = command.data?.mealType || selectedMealType;
+      setSelectedMealType(mealType);
+      setActiveTab('logger');
+      
+      toast({
+        title: 'Food Logging Ready',
+        description: `Set meal type to ${mealType}. Now take a photo or scan a barcode.`,
+      });
+    }
+  };
+
   const getMealTypeColor = (mealType: MealType) => {
     switch (mealType) {
       case 'breakfast': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
