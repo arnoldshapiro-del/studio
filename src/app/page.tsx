@@ -198,7 +198,6 @@ export default function Home() {
                         <LayoutDashboard className="w-4 h-4" />
                         <span>Dashboard</span>
                     </button>
-                </SidebarMenuItem>
                     <button onClick={() => setActiveView('calendar')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'calendar' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
                         <CalendarIcon className="w-4 h-4" />
                         <span>Calendar</span>
