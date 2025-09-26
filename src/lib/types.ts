@@ -78,6 +78,44 @@ export type MeditationState = {
 };
 
 
+// Food tracking types
+export type FoodItem = {
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber?: number;
+  sodium?: number;
+};
+
+export type MealType = 'breakfast' | 'lunch' | dinner' | 'snack';
+
+export type FoodEntry = DatedEntry & {
+  id: string;
+  mealType: MealType;
+  items: FoodItem[];
+  total: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  photoUrl?: string; // Base64 data URL for the photo
+  analysisMethod: 'photo' | 'barcode' | 'manual';
+  timestamp: string; // When the food was consumed
+};
+
+export type FoodState = {
+  dailyGoals: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  };
+  history: FoodEntry[];
+};
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
@@ -86,4 +124,5 @@ export type AllData = {
   mood: MoodState;
   stress: StressState;
   meditation: MeditationState;
+  food: FoodState;
 };
