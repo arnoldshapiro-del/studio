@@ -191,13 +191,13 @@ export default function Home() {
     <div className="flex flex-col min-h-screen">
       <Header />
       <div className='flex flex-1'>
-        <Sidebar>
-            <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={() => setActiveView('dashboard')} isActive={activeView === 'dashboard'} tooltip="Dashboard">
-                        <LayoutDashboard />
+        <div className="w-64 bg-gray-100 border-r">
+            <div className="p-4">
+                <div className="space-y-1">
+                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-gray-200' : 'hover:bg-gray-200'}`}>
+                        <LayoutDashboard className="w-4 h-4" />
                         <span>Dashboard</span>
-                    </SidebarMenuButton>
+                    </button>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                     <SidebarMenuButton onClick={() => setActiveView('calendar')} isActive={activeView === 'calendar'} tooltip="Calendar">
