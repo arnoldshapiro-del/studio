@@ -34,7 +34,7 @@ import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Calendar from '@/components/dashboard/calendar';
 import HealthReport from '@/components/health-report';
 import { SidebarProvider, Sidebar, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from '@/components/ui/sidebar';
-import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit, Users, Calendar as CalendarIcon, Moon, Activity, Trophy } from 'lucide-react';
+import { BarChart, CheckSquare, HelpCircle, LayoutDashboard, Settings as SettingsIcon, Utensils, BrainCircuit, Users, Calendar as CalendarIcon, Moon, Activity, Trophy, FileText, TrendingUp, Zap } from 'lucide-react';
 
 
 export default function Home() {
