@@ -153,6 +153,10 @@ export default function Home() {
       case 'biometrics':
         return <BiometricsTracker biometricsData={allData.biometrics} userDocRef={userDocRef} />;
       case 'community':
+        return <CommunityHub socialData={allData.social} userDocRef={userDocRef} />;
+      case 'achievements':
+        return <AchievementTracker socialData={allData.social} allHealthData={allData} userDocRef={userDocRef} />;
+      case 'community':
         return (
           <div className="text-center">
               <h2 className="text-2xl font-bold">Community Features Coming Soon!</h2>
