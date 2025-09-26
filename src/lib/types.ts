@@ -89,7 +89,7 @@ export type FoodItem = {
   sodium?: number;
 };
 
-export type MealType = 'breakfast' | 'lunch' | dinner' | 'snack';
+export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export type FoodEntry = DatedEntry & {
   id: string;
