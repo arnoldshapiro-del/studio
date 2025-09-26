@@ -25,6 +25,7 @@ export type WaterState = {
 
 export type InjectionEntry = DatedEntry & {
   id: string;
+  site: string; // e.g., 'Abdomen Left', 'Thigh Right'
 };
 
 export type InjectionState = {

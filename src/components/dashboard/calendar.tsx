@@ -83,7 +83,7 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
 
   allData.injection.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Injection', detail: 'Mounjaro Shot', icon: Syringe, time: format(parseISO(h.date), 'h:mm a') });
+      events.push({ type: 'Injection', detail: `Mounjaro - ${h.site}`, icon: Syringe, time: format(parseISO(h.date), 'h:mm a') });
     }
   });
 
@@ -114,8 +114,8 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
   return events.sort((a, b) => {
     if (a.time && b.time) {
         try {
-            const timeA = parse(a.time, 'h:mm a', new Date());
-            const timeB = parse(b.time, 'h:mm a', new Date());
+            const timeA = parse(a.time.split(' - ')[0], 'h:mm a', new Date());
+            const timeB = parse(b.time.split(' - ')[0], 'h:mm a', new Date());
             return timeA.getTime() - timeB.getTime();
         } catch (e) {
             return 0;
@@ -296,7 +296,7 @@ const Calendar = ({ allData, onUpdateWorkout, onDeleteWorkout }: CalendarProps) 
                           <event.icon className="h-6 w-6 text-primary" />
                           <div className='flex-1'>
                             <p className="font-semibold text-base capitalize">{event.type}</p>
-                            <p className="text-sm text-muted-foreground capitalize">{event.detail}</p>
+                            <p className="text-sm text-muted-foreground">{event.detail}</p>
                             {event.time && <p className="text-sm text-muted-foreground">{event.time}</p>}
                           </div>
                           {event.type === 'Workout' && (
@@ -371,5 +371,3 @@ const Calendar = ({ allData, onUpdateWorkout, onDeleteWorkout }: CalendarProps) 
 };
 
 export default Calendar;
-
-    
