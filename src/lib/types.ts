@@ -198,6 +198,131 @@ export type BiometricsState = {
   history: BiometricEntry[];
 };
 
+// Social and Community types
+export type FriendStatus = 'pending' | 'accepted' | 'blocked';
+
+export type Friend = {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  status: FriendStatus;
+  connectedAt: string;
+  lastActivity?: string;
+};
+
+export type ChallengeType = 'workout' | 'water' | 'sleep' | 'steps' | 'meditation' | 'streak';
+
+export type Challenge = {
+  id: string;
+  title: string;
+  description: string;
+  type: ChallengeType;
+  target: number;
+  unit: string;
+  duration: number; // days
+  startDate: string;
+  endDate: string;
+  participants: string[]; // user IDs
+  leaderboard: {
+    userId: string;
+    name: string;
+    progress: number;
+    completedAt?: string;
+  }[];
+  isPublic: boolean;
+  createdBy: string;
+  prize?: string;
+};
+
+export type CommunityPost = {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  content: string;
+  type: 'success_story' | 'question' | 'motivation' | 'tip';
+  tags: string[];
+  likes: string[]; // user IDs
+  comments: {
+    id: string;
+    userId: string;
+    userName: string;
+    content: string;
+    timestamp: string;
+  }[];
+  timestamp: string;
+  isExpert?: boolean;
+};
+
+// Achievement System types
+export type AchievementTier = 'bronze' | 'silver' | 'gold' | 'platinum';
+
+export type Achievement = {
+  id: string;
+  title: string;
+  description: string;
+  category: 'medication' | 'water' | 'workout' | 'sleep' | 'food' | 'mood' | 'social' | 'streak';
+  tier: AchievementTier;
+  icon: string;
+  requirement: {
+    type: 'count' | 'streak' | 'goal' | 'consistency';
+    target: number;
+    period?: 'day' | 'week' | 'month' | 'year';
+  };
+  points: number;
+  unlockedAt?: string;
+  progress: number;
+};
+
+export type UserAchievement = {
+  achievementId: string;
+  unlockedAt: string;
+  progress: number;
+  isNew: boolean;
+};
+
+// Peer Support types
+export type AccountabilityPartner = {
+  id: string;
+  name: string;
+  avatar?: string;
+  goals: string[];
+  matchScore: number;
+  connectedAt: string;
+  lastCheckIn?: string;
+};
+
+export type SupportMessage = {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  content: string;
+  type: 'encouragement' | 'check_in' | 'milestone' | 'question';
+  timestamp: string;
+  read: boolean;
+};
+
+export type SocialState = {
+  profile: {
+    displayName: string;
+    avatar?: string;
+    bio?: string;
+    privacyLevel: 'public' | 'friends' | 'private';
+    shareAchievements: boolean;
+    shareProgress: boolean;
+  };
+  friends: Friend[];
+  challenges: Challenge[];
+  achievements: UserAchievement[];
+  communityPosts: CommunityPost[];
+  accountabilityPartners: AccountabilityPartner[];
+  messages: SupportMessage[];
+  totalPoints: number;
+  currentStreak: number;
+  longestStreak: number;
+};
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
@@ -209,4 +334,5 @@ export type AllData = {
   food: FoodState;
   sleep: SleepState;
   biometrics: BiometricsState;
+  social: SocialState;
 };
