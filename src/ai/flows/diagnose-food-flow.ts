@@ -103,7 +103,7 @@ const prompt = ai.definePrompt({
 
   If you use the lookupBarcode tool and it returns a result, you must use that result to populate the 'items' and 'total' fields of your response. Do not hallucinate data if the barcode lookup is successful. The 'total' should just be the values from the single item.
 
-  {{#if barcode}}Barcode: {{{barcode}}}{{/if}}
+  {{#if barcode}}Barcode: {{{barcode}}}{{#if}}
   {{#if photoDataUri}}Photo: {{media url=photoDataUri}}{{/if}}
   `,
 });
@@ -115,8 +115,7 @@ const diagnoseFoodFlow = ai.defineFlow(
     outputSchema: DiagnoseFoodOutputSchema,
   },
   async (input) => {
-    const response = await prompt(input);
-    const output = response.output();
+    const { output } = await prompt(input);
     
     if (!output) {
       throw new Error('AI failed to return valid analysis.');
