@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronLeft, ChevronRight, Pill, GlassWater, Syringe, Footprints, Trash2, Edit, Smile, Frown, Meh } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Pill, GlassWater, Syringe, Footprints, Trash2, Edit, Smile, Frown, Meh, BrainCircuit } from 'lucide-react';
 import {
   format,
   startOfWeek,
@@ -101,13 +101,13 @@ const getEventsForDay = (day: Date, allData: AllData): Event[] => {
 
   allData.stress.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Stress', detail: `Level ${h.level}`, icon: Pill, time: format(parseISO(h.date), 'h:mm a') });
+      events.push({ type: 'Stress', detail: `Level ${h.level}`, icon: BrainCircuit, time: format(parseISO(h.date), 'h:mm a') });
     }
   });
 
   allData.meditation.history.forEach(h => {
     if (isSameDay(parseISO(h.date), day)) {
-      events.push({ type: 'Meditation', detail: `${h.duration} min`, icon: Pill, time: format(parseISO(h.date), 'h:mm a') });
+      events.push({ type: 'Meditation', detail: `${h.duration} min`, icon: BrainCircuit, time: format(parseISO(h.date), 'h:mm a') });
     }
   });
 
