@@ -285,6 +285,16 @@ export function getVoicePrompts(activityType?: string): string[] {
       "Say: 'I ate breakfast'",
       "Say: 'Had lunch today'",
       "Say: 'Ate a snack'"
+    ],
+    sleep: [
+      "Say: 'I slept 8 hours'",
+      "Say: 'Slept well last night'",
+      "Say: 'Had poor sleep'"
+    ],
+    biometrics: [
+      "Say: 'Heart rate is 72 bpm'",
+      "Say: 'I weigh 70 kg'",
+      "Say: 'Temperature is 36.6 degrees'"
     ]
   };
   
