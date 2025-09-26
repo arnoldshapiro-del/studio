@@ -92,6 +92,7 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
+        return stream;
       } catch (error) {
         console.error('Error accessing camera:', error);
         setHasCameraPermission(false);
@@ -101,8 +102,40 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
           description:
             'Please enable camera permissions in your browser settings to use this feature.',
         });
+        throw error;
       }
     },[toast]);
+
+  const requestCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
+      });
+      setHasCameraPermission(true);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      toast({
+        title: 'Camera Access Granted',
+        description: 'You can now take photos of your food!',
+      });
+      return stream;
+    } catch (error) {
+      console.error('Camera access error:', error);
+      setHasCameraPermission(false);
+      toast({
+        variant: 'destructive',
+        title: 'Camera Access Required',
+        description: 'Please allow camera access in your browser settings to take photos of food.',
+      });
+      alert("Camera access denied. Please allow camera in browser settings to use food photo recognition.");
+      throw error;
+    }
+  };
 
   useEffect(() => {
     getCameraPermission();
