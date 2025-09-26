@@ -16,6 +16,8 @@ import StreaksTracker from '@/components/dashboard/streaks-tracker';
 import AiInsights from '@/components/dashboard/ai-insights';
 import AiRecommendations from '@/components/dashboard/ai-recommendations';
 import FoodTracker from '@/components/dashboard/food-tracker';
+import SleepTracker from '@/components/dashboard/sleep-tracker';
+import BiometricsTracker from '@/components/dashboard/biometrics-tracker';
 import StressWellness from '@/components/dashboard/stress-wellness';
 import Settings from '@/components/settings';
 import Help from '@/components/help';
