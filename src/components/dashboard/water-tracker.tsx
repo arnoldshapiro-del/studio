@@ -11,6 +11,9 @@ import { useFirestore, useUser, useMemoFirebase, useDoc } from '@/firebase';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { doc } from 'firebase/firestore';
 import { initialWaterState } from '@/lib/data';
+import { VoiceButton } from '@/components/ui/voice-button';
+import { VoiceCommand } from '@/lib/voice-commands';
+import { useToast } from '@/hooks/use-toast';
 
 const WaterTracker = () => {
   const { user } = useUser();
