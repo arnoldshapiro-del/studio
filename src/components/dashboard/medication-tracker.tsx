@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 const MedicationTracker = () => {
   const { user } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const userDocRef = useMemoFirebase(() => {
     if (!user || !firestore) return null;
@@ -42,6 +43,18 @@ const MedicationTracker = () => {
     }
     
     setDocumentNonBlocking(userDocRef, { medication: { ...medication, history: updatedHistory } }, { merge: true });
+  };
+
+  const handleVoiceCommand = (command: VoiceCommand) => {
+    if (command.action === 'log_medication') {
+      const period = command.data?.period || 'morning';
+      handleToggle(period);
+      
+      toast({
+        title: 'Medication Logged',
+        description: `${period.charAt(0).toUpperCase() + period.slice(1)} medication marked as taken`,
+      });
+    }
   };
 
   const handleTimeChange = (period: 'morning' | 'evening', time: string) => {
