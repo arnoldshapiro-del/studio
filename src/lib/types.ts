@@ -323,6 +323,112 @@ export type SocialState = {
   longestStreak: number;
 };
 
+// Analytics and Reporting types
+export type HealthMetric = 'medication' | 'water' | 'workout' | 'sleep' | 'food' | 'mood' | 'biometrics';
+
+export type DataPoint = {
+  date: string;
+  value: number;
+  metric: HealthMetric;
+  category?: string;
+};
+
+export type Correlation = {
+  metrics: [HealthMetric, HealthMetric];
+  coefficient: number; // -1 to 1
+  strength: 'weak' | 'moderate' | 'strong';
+  direction: 'positive' | 'negative';
+  significance: number;
+};
+
+export type Pattern = {
+  id: string;
+  type: 'seasonal' | 'weekly' | 'daily' | 'trend';
+  metric: HealthMetric;
+  description: string;
+  confidence: number;
+  recommendation?: string;
+  detectedAt: string;
+};
+
+export type Anomaly = {
+  id: string;
+  metric: HealthMetric;
+  value: number;
+  expectedRange: [number, number];
+  severity: 'low' | 'medium' | 'high';
+  date: string;
+  description: string;
+  recommendation?: string;
+};
+
+export type HealthReport = {
+  id: string;
+  generatedAt: string;
+  period: { start: string; end: string };
+  summary: {
+    overallScore: number;
+    keyMetrics: Record<HealthMetric, {
+      average: number;
+      trend: 'improving' | 'stable' | 'declining';
+      adherence: number;
+    }>;
+    achievements: string[];
+    concerns: string[];
+  };
+  sections: {
+    medicationAdherence: {
+      percentage: number;
+      missed: number;
+      streaks: number;
+    };
+    lifestyleFactors: {
+      sleep: { average: number; quality: number };
+      exercise: { frequency: number; duration: number };
+      nutrition: { caloryGoalsMet: number; balance: number };
+    };
+    correlations: Correlation[];
+    recommendations: string[];
+  };
+};
+
+export type WellnessScore = {
+  date: string;
+  overall: number;
+  components: Record<HealthMetric, number>;
+  factors: {
+    consistency: number;
+    goal_achievement: number;
+    trend: number;
+    balance: number;
+  };
+};
+
+export type PriorityAction = {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  category: HealthMetric;
+  dueDate?: string;
+  completed: boolean;
+};
+
+export type AnalyticsState = {
+  reports: HealthReport[];
+  patterns: Pattern[];
+  anomalies: Anomaly[];
+  correlations: Correlation[];
+  wellnessScores: WellnessScore[];
+  priorityActions: PriorityAction[];
+  preferences: {
+    dashboardWidgets: string[];
+    reportFrequency: 'weekly' | 'monthly' | 'quarterly';
+    anomalyAlerts: boolean;
+    shareWithProvider: boolean;
+  };
+};
+
 export type AllData = {
   medication: MedicationState;
   water: WaterState;
@@ -335,4 +441,5 @@ export type AllData = {
   sleep: SleepState;
   biometrics: BiometricsState;
   social: SocialState;
+  analytics: AnalyticsState;
 };
