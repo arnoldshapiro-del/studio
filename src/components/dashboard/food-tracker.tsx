@@ -149,7 +149,16 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
     }
   }, [getCameraPermission]);
 
-  const takePhoto = () => {
+  const takePhoto = async () => {
+    // Ensure camera permission first
+    if (!hasCameraPermission) {
+      try {
+        await requestCamera();
+      } catch (error) {
+        return; // Exit if camera access fails
+      }
+    }
+
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -162,6 +171,11 @@ const FoodTracker = ({ foodData, userDocRef }: FoodTrackerProps) => {
         setPhoto(dataUrl);
         setAnalysis(null);
         setCaptureMode('photo');
+        
+        toast({
+          title: 'Photo Captured!',
+          description: 'Click "Analyze Photo" to get nutritional information.',
+        });
       }
     }
   };
